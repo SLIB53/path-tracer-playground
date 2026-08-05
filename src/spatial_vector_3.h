@@ -138,7 +138,4 @@ inline spatial_vector_3 norm(const spatial_vector_3 &v) noexcept {
   return v / v.length();
 }
 
-using point3 = spatial_vector_3;
-using color = spatial_vector_3;
-
 #endif
