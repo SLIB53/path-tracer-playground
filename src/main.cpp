@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <print>
 
-#include <color.h>
+#include "color.h"
 
 constexpr int image_width = 1024;
 constexpr int image_height = 1024;
