@@ -10,7 +10,7 @@ class spatial_vector_3 {
 public:
   std::array<double, 3> elements;
 
-  constexpr spatial_vector_3() noexcept : elements{0, 0, 0} {}
+  constexpr spatial_vector_3() noexcept : elements{0.0, 0.0, 0.0} {}
 
   constexpr spatial_vector_3(double element1, double element2,
                              double element3) noexcept

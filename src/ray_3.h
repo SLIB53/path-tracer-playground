@@ -28,4 +28,17 @@ private:
   spatial_vector_3 direction_;
 };
 
+constexpr bool intersects_sphere(const ray_3 &ray, const point_3 &sphere_center,
+                                 double sphere_radius) noexcept {
+  auto c_minus_q = sphere_center - ray.origin();
+
+  auto a = ray.direction().length_squared();
+  auto b = -2 * dot(ray.direction(), c_minus_q);
+  auto c = c_minus_q.length_squared() - sphere_radius * sphere_radius;
+
+  auto discriminant = b * b - 4 * a * c;
+
+  return discriminant >= 0;
+}
+
 #endif

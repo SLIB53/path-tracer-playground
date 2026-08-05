@@ -8,29 +8,26 @@
 
 constexpr int pixmap_max_level = 255;
 
-// Image
-
 constexpr int image_width = 1280;
 constexpr int image_height = 720;
 
-// Camera
+constexpr double camera_focal_length = 1.0;
+constexpr point_3 camera_center;
 
-constexpr auto camera_focal_length = 1.0;
-constexpr auto camera_center = point_3();
-constexpr auto viewport_height = 2.0;
-constexpr auto viewport_width =
+constexpr double viewport_height = 2.0;
+constexpr double viewport_width =
     viewport_height * (double(image_width) / image_height);
 
-constexpr auto viewport_u = spatial_vector_3(viewport_width, 0, 0);
-constexpr auto viewport_v = spatial_vector_3(0, -viewport_height, 0);
-constexpr auto viewport_origin = camera_center -
-                                 spatial_vector_3(0, 0, camera_focal_length) -
-                                 viewport_u / 2 - viewport_v / 2;
+constexpr spatial_vector_3 viewport_u(viewport_width, 0.0, 0.0);
+constexpr spatial_vector_3 viewport_v(0.0, -viewport_height, 0.0);
+constexpr spatial_vector_3 viewport_origin =
+    camera_center - spatial_vector_3(0.0, 0.0, camera_focal_length) -
+    viewport_u / 2.0 - viewport_v / 2.0;
 
-constexpr auto pixel_delta_u = viewport_u / image_width;
-constexpr auto pixel_delta_v = viewport_v / image_height;
+constexpr spatial_vector_3 pixel_delta_u = viewport_u / image_width;
+constexpr spatial_vector_3 pixel_delta_v = viewport_v / image_height;
 constexpr point_3 pixel_00_center =
-    viewport_origin + (pixel_delta_u + pixel_delta_v) / 2;
+    viewport_origin + (pixel_delta_u + pixel_delta_v) / 2.0;
 
 template <class F1, class F2>
 void for_each_pixel(int width, int height, F1 &&each_row, F2 &&each_pixel) {
@@ -48,7 +45,7 @@ void write_header() {
 }
 
 void write_pixel(const color &pixel_color) {
-  auto color_channel_to_level = [](double ch) noexcept -> int {
+  static auto color_channel_to_level = [](double ch) noexcept -> int {
     return int((double(pixmap_max_level) + 0.999) * ch);
   };
 
@@ -59,15 +56,29 @@ void write_pixel(const color &pixel_color) {
 
 template <class F> void write_pixels(F &&each_row) {
   for_each_pixel(image_width, image_height, each_row, [](int row, int col) {
-    auto pixel_center =
+    static const auto background_color =
+        [](const ray_3 &ray) noexcept -> color {
+      auto a = (norm(ray.direction()).y() + 1.0) / 2.0;
+
+      color c1(1.0, 1.0, 1.0);
+      color c2(0.5, 0.7, 1.0);
+
+      return (1.0 - a) * c1 + a * c2;
+    };
+
+    static const color sphere_color(1.0, 0.0, 0.0);
+
+    point_3 pixel_center =
         pixel_00_center + (col * pixel_delta_u) + (row * pixel_delta_v);
 
-    ray_3 ray(camera_center, pixel_center - camera_center);
+    ray_3 r(camera_center, pixel_center - camera_center);
 
-    auto a = (norm(ray.direction()).y() + 1.0) / 2;
-    color c1(1.0, 1.0, 1.0);
-    color c2(0.5, 0.7, 1.0);
-    auto final_color = (1.0 - a) * c1 + a * c2;
+    point_3 s_center(0.0, 0.0, -1.0);
+    double s_radius = 0.5;
+
+    auto final_color = intersects_sphere(r, s_center, s_radius)
+                           ? sphere_color
+                           : background_color(r);
 
     write_pixel(final_color);
   });
