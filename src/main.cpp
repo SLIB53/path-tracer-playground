@@ -2,11 +2,35 @@
 #include <print>
 
 #include "color.h"
-
-constexpr int image_width = 1024;
-constexpr int image_height = 1024;
+#include "point_3.h"
+#include "ray_3.h"
+#include "spatial_vector_3.h"
 
 constexpr int pixmap_max_level = 255;
+
+// Image
+
+constexpr int image_width = 1280;
+constexpr int image_height = 720;
+
+// Camera
+
+constexpr auto camera_focal_length = 1.0;
+constexpr auto camera_center = point_3();
+constexpr auto viewport_height = 2.0;
+constexpr auto viewport_width =
+    viewport_height * (double(image_width) / image_height);
+
+constexpr auto viewport_u = spatial_vector_3(viewport_width, 0, 0);
+constexpr auto viewport_v = spatial_vector_3(0, -viewport_height, 0);
+constexpr auto viewport_origin = camera_center -
+                                 spatial_vector_3(0, 0, camera_focal_length) -
+                                 viewport_u / 2 - viewport_v / 2;
+
+constexpr auto pixel_delta_u = viewport_u / image_width;
+constexpr auto pixel_delta_v = viewport_v / image_height;
+constexpr point_3 pixel_00_center =
+    viewport_origin + (pixel_delta_u + pixel_delta_v) / 2;
 
 template <class F1, class F2>
 void for_each_pixel(int width, int height, F1 &&each_row, F2 &&each_pixel) {
@@ -24,7 +48,7 @@ void write_header() {
 }
 
 void write_pixel(const color &pixel_color) {
-  constexpr auto color_channel_to_level = [](double ch) noexcept -> int {
+  auto color_channel_to_level = [](double ch) noexcept -> int {
     return int((double(pixmap_max_level) + 0.999) * ch);
   };
 
@@ -35,8 +59,17 @@ void write_pixel(const color &pixel_color) {
 
 template <class F> void write_pixels(F &&each_row) {
   for_each_pixel(image_width, image_height, each_row, [](int row, int col) {
-    write_pixel(color(double(col) / (image_width - 1),
-                      double(row) / (image_height - 1), 0));
+    auto pixel_center =
+        pixel_00_center + (col * pixel_delta_u) + (row * pixel_delta_v);
+
+    ray_3 ray(camera_center, pixel_center - camera_center);
+
+    auto a = (norm(ray.direction()).y() + 1.0) / 2;
+    color c1(1.0, 1.0, 1.0);
+    color c2(0.5, 0.7, 1.0);
+    auto final_color = (1.0 - a) * c1 + a * c2;
+
+    write_pixel(final_color);
   });
 }
 
