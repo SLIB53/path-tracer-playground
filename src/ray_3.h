@@ -7,15 +7,14 @@ class ray_3 {
 public:
   constexpr ray_3() noexcept = default;
 
-  constexpr ray_3(const point_3 &origin,
-                  const spatial_vector_3 &direction) noexcept
+  constexpr ray_3(const point_3 &origin, const vector_3 &direction) noexcept
       : origin_(origin), direction_(direction) {}
 
   [[nodiscard]] constexpr const point_3 &origin() const noexcept {
     return origin_;
   }
 
-  [[nodiscard]] constexpr const spatial_vector_3 &direction() const noexcept {
+  [[nodiscard]] constexpr const vector_3 &direction() const noexcept {
     return direction_;
   }
 
@@ -25,7 +24,7 @@ public:
 
 private:
   point_3 origin_;
-  spatial_vector_3 direction_;
+  vector_3 direction_;
 };
 
 [[nodiscard]] constexpr double

@@ -1,8 +1,8 @@
 #ifndef COLOR
 #define COLOR
 
-#include "spatial_vector_3.h"
+#include "vector_3.h"
 
-using color = spatial_vector_3;
+using color = vector_3;
 
 #endif

@@ -4,7 +4,7 @@
 #include "color.h"
 #include "point_3.h"
 #include "ray_3.h"
-#include "spatial_vector_3.h"
+#include "vector_3.h"
 
 constexpr int pixmap_max_level = 255;
 
@@ -18,14 +18,14 @@ constexpr double viewport_height = 2.0;
 constexpr double viewport_width =
     viewport_height * (double(image_width) / image_height);
 
-constexpr spatial_vector_3 viewport_u(viewport_width, 0.0, 0.0);
-constexpr spatial_vector_3 viewport_v(0.0, -viewport_height, 0.0);
-constexpr spatial_vector_3 viewport_origin =
-    camera_center - spatial_vector_3(0.0, 0.0, camera_focal_length) -
-    viewport_u / 2.0 - viewport_v / 2.0;
+constexpr vector_3 viewport_u(viewport_width, 0.0, 0.0);
+constexpr vector_3 viewport_v(0.0, -viewport_height, 0.0);
+constexpr vector_3 viewport_origin = camera_center -
+                                     vector_3(0.0, 0.0, camera_focal_length) -
+                                     viewport_u / 2.0 - viewport_v / 2.0;
 
-constexpr spatial_vector_3 pixel_delta_u = viewport_u / image_width;
-constexpr spatial_vector_3 pixel_delta_v = viewport_v / image_height;
+constexpr vector_3 pixel_delta_u = viewport_u / image_width;
+constexpr vector_3 pixel_delta_v = viewport_v / image_height;
 constexpr point_3 pixel_00_center =
     viewport_origin + (pixel_delta_u + pixel_delta_v) / 2.0;
 
@@ -72,7 +72,7 @@ template <class F> void write_pixels(F &&each_row) {
     // the normal to a color.
     static const auto sphere_color = [](const ray_3 &ray, double t,
                                         const point_3 &sphere_center) -> color {
-      spatial_vector_3 n = norm(ray.at(t) - sphere_center);
+      vector_3 n = norm(ray.at(t) - sphere_center);
 
       return 0.5 * (color(n.x() + 1, n.y() + 1, n.z() + 1));
     };
