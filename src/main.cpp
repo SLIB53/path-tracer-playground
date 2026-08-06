@@ -56,6 +56,7 @@ void write_pixel(const color &pixel_color) {
 
 template <class F> void write_pixels(F &&each_row) {
   for_each_pixel(image_width, image_height, each_row, [](int row, int col) {
+    // Given the camera ray, interpolate a gradient.
     static const auto background_color =
         [](const ray_3 &ray) noexcept -> color {
       auto a = (norm(ray.direction()).y() + 1.0) / 2.0;
@@ -66,7 +67,15 @@ template <class F> void write_pixels(F &&each_row) {
       return (1.0 - a) * c1 + a * c2;
     };
 
-    static const color sphere_color(1.0, 0.0, 0.0);
+    // Given the pixel ray that contacts a sphere with center sphere_center at
+    // t, calculate the normal vector on the surface of the sphere, and map
+    // the normal to a color.
+    static const auto sphere_color = [](const ray_3 &ray, double t,
+                                        const point_3 &sphere_center) -> color {
+      spatial_vector_3 n = norm(ray.at(t) - sphere_center);
+
+      return 0.5 * (color(n.x() + 1, n.y() + 1, n.z() + 1));
+    };
 
     point_3 pixel_center =
         pixel_00_center + (col * pixel_delta_u) + (row * pixel_delta_v);
@@ -76,9 +85,9 @@ template <class F> void write_pixels(F &&each_row) {
     point_3 s_center(0.0, 0.0, -1.0);
     double s_radius = 0.5;
 
-    auto final_color = intersects_sphere(r, s_center, s_radius)
-                           ? sphere_color
-                           : background_color(r);
+    auto t = intersects_sphere(r, s_center, s_radius);
+    auto final_color =
+        t > 0.0 ? sphere_color(r, t, s_center) : background_color(r);
 
     write_pixel(final_color);
   });
