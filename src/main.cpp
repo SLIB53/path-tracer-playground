@@ -4,6 +4,7 @@
 #include "color.h"
 #include "point_3.h"
 #include "ray_3.h"
+#include "sphere.h"
 #include "vector_3.h"
 
 constexpr int pixmap_max_level = 255;
@@ -56,6 +57,8 @@ void write_pixel(const color &pixel_color) {
 
 template <class F> void write_pixels(F &&each_row) {
   for_each_pixel(image_width, image_height, each_row, [](int row, int col) {
+    // Shade
+
     // Given the camera ray, interpolate a gradient.
     static const auto background_color =
         [](const ray_3 &ray) noexcept -> color {
@@ -67,14 +70,14 @@ template <class F> void write_pixels(F &&each_row) {
       return (1.0 - a) * c1 + a * c2;
     };
 
-    // Given the pixel ray that contacts a sphere with center sphere_center at
-    // t, calculate the normal vector on the surface of the sphere, and map
-    // the normal to a color.
-    static const auto sphere_color = [](const ray_3 &ray, double t,
-                                        const point_3 &sphere_center) -> color {
-      vector_3 n = norm(ray.at(t) - sphere_center);
-
-      return 0.5 * (color(n.x() + 1, n.y() + 1, n.z() + 1));
+    // Given the intersection where the pixel ray contacts the sphere, use the
+    // normal vector at the contact point on the surface of the sphere to map to
+    // a color.
+    static const auto sphere_color =
+        [](ray_3_intersection intersection) -> color {
+      return 0.5 *
+             (color(intersection.normal.x() + 1, intersection.normal.y() + 1,
+                    intersection.normal.z() + 1));
     };
 
     point_3 pixel_center =
@@ -82,12 +85,14 @@ template <class F> void write_pixels(F &&each_row) {
 
     ray_3 r(camera_center, pixel_center - camera_center);
 
-    point_3 s_center(0.0, 0.0, -1.0);
-    double s_radius = 0.5;
+    sphere s(point_3(0.0, 0.0, -1.0), 0.5);
 
-    auto t = intersects_sphere(r, s_center, s_radius);
-    auto final_color =
-        t > 0.0 ? sphere_color(r, t, s_center) : background_color(r);
+    ray_3_intersection rsi;
+
+    auto final_color = s.intersects(r, 0.0, 1000.0, rsi) ? sphere_color(rsi)
+                                                         : background_color(r);
+
+    // Write
 
     write_pixel(final_color);
   });

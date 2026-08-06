@@ -1,7 +1,10 @@
 #ifndef RAY_3
 #define RAY_3
 
+#include <concepts>
+
 #include "point_3.h"
+#include "vector_3.h"
 
 class ray_3 {
 public:
@@ -27,18 +30,20 @@ private:
   vector_3 direction_;
 };
 
-[[nodiscard]] constexpr double
-intersects_sphere(const ray_3 &ray, const point_3 &sphere_center,
-                  double sphere_radius) noexcept {
-  auto c_minus_q = sphere_center - ray.origin();
+class ray_3_intersection {
+public:
+  double t;
+  point_3 contact_point;
+  vector_3 normal;
+};
 
-  auto a = ray.direction().length_squared();
-  auto h = dot(ray.direction(), c_minus_q);
-  auto c = c_minus_q.length_squared() - sphere_radius * sphere_radius;
-
-  auto discriminant = h * h - a * c;
-
-  return discriminant >= 0.0 ? (h - std::sqrt(discriminant)) / a : -1.0;
-}
+template <class T>
+concept ray_3_intersectable =
+    requires(const T &shape, const ray_3 &ray, double ray_t_min,
+             double ray_t_max, ray_3_intersection &out) {
+      {
+        shape.intersects(ray, ray_t_min, ray_t_max, out)
+      } -> std::same_as<bool>;
+    };
 
 #endif
