@@ -37,8 +37,9 @@ public:
         return false;
 
     out.t = root_nearest;
-    out.contact_point = ray.at(out.t);
-    out.normal = (out.contact_point - center_) / radius_;
+    out.point = ray.at(out.t);
+    out.from_front =
+        intersects_from_front(ray, (out.point - center_) / radius_, out.normal);
 
     return true;
   }
