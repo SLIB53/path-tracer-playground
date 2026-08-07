@@ -1,12 +1,11 @@
 #pragma once
 
 #include <print>
+#include <random>
 
 #include "camera.h"
 #include "color.h"
 #include "shape.h"
-
-constexpr int pixmap_color_level_max = 255;
 
 class pixmap_formatter {
 public:
@@ -15,18 +14,23 @@ public:
 
   [[nodiscard]] std::string format_header() const {
     return std::format("P3\n{} {}\n{}", image_width, image_height,
-                       pixmap_color_level_max);
+                       color_level_max);
   }
 
   [[nodiscard]] std::string format_pixel(const color &pixel_color) const {
     auto color_channel_to_level = [](double ch) noexcept -> int {
-      return int((double(pixmap_color_level_max) + 0.999) * ch);
+      assert_color_channel(ch);
+
+      return int((double(color_level_max) + 0.999) * ch);
     };
 
     return std::format("{} {} {}", color_channel_to_level(pixel_color.r()),
                        color_channel_to_level(pixel_color.g()),
                        color_channel_to_level(pixel_color.b()));
   }
+
+private:
+  static constexpr int color_level_max = 255;
 };
 
 void render(const pixmap_formatter &formatter, const camera &main_camera,
@@ -53,7 +57,10 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
         color c1(1.0, 1.0, 1.0);
         color c2(0.5, 0.7, 1.0);
 
-        return (1.0 - a) * c1 + a * c2;
+        auto result = (1.0 - a) * c1 + a * c2;
+        assert_color(result);
+
+        return result;
       };
 
       // Given the intersection where the camera ray contacts a shape, use the
@@ -61,22 +68,52 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
       // to a color.
       static const auto shape_color =
           [](ray_3_intersection intersection) noexcept -> color {
-        return 0.5 *
-               (color(intersection.normal.x() + 1, intersection.normal.y() + 1,
-                      intersection.normal.z() + 1));
+        auto result = 0.5 * (color(intersection.normal.x() + 1,
+                                   intersection.normal.y() + 1,
+                                   intersection.normal.z() + 1));
+        assert_color(result);
+
+        return result;
       };
 
-      point_3 pixel_center =
-          pixel_00_center + (col * pixel_delta_u) + (row * pixel_delta_v);
+      // Given a pixel's (u, v) coordinates, sample the world from the main
+      // camera.
+      const auto pixel_sample_color = [&](double u,
+                                          double v) noexcept -> color {
+        auto pixel_sample_center =
+            pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
 
-      ray_3 camera_ray(main_camera.station_point,
-                       pixel_center - main_camera.station_point);
+        ray_3 camera_ray(main_camera.station_point,
+                         pixel_sample_center - main_camera.station_point);
 
-      ray_3_intersection intersection;
-      auto final_color =
-          intersects(world, camera_ray, gte_zero_interval, intersection)
-              ? shape_color(intersection)
-              : background_color(camera_ray);
+        ray_3_intersection intersection;
+        auto result = intersects(world, camera_ray, interval(0.0, +infinity),
+                                 intersection)
+                          ? shape_color(intersection)
+                          : background_color(camera_ray);
+        assert_color(result);
+
+        return result;
+      };
+
+      color final_color;
+      if (static constexpr int ssaa_samples_per_pixel = 100;
+          ssaa_samples_per_pixel > 0) {
+        for (int s = 0; s < ssaa_samples_per_pixel; ++s) {
+          static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+          static std::mt19937 generator;
+          double u_jittered = col + distribution(generator) - 0.5;
+          double v_jittered = row + distribution(generator) - 0.5;
+
+          final_color += pixel_sample_color(u_jittered, v_jittered);
+        }
+        final_color /= ssaa_samples_per_pixel;
+      } else {
+        double u = col;
+        double v = row;
+
+        final_color = pixel_sample_color(u, v);
+      }
 
       // Output
 

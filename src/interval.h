@@ -20,5 +20,3 @@ public:
     return x > min && x < max;
   }
 };
-
-constexpr interval gte_zero_interval = interval(0, +infinity);
