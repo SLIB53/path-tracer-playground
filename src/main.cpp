@@ -13,6 +13,7 @@ int main() {
   formatter.image_height = image_height;
 
   camera main_camera;
+  main_camera.focal_length = 1.0;
   main_camera.viewport_height = 2.0;
   main_camera.viewport_width = main_camera.viewport_height * image_aspect_ratio;
 

@@ -42,5 +42,5 @@ public:
 
 private:
   point_3 center_;
-  double radius_;
+  double radius_ = 0.0;
 };

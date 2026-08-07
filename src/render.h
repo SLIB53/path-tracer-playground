@@ -6,20 +6,21 @@
 #include "color.h"
 #include "shape.h"
 
+constexpr int pixmap_color_level_max = 255;
+
 class pixmap_formatter {
 public:
   int image_width = 0;
   int image_height = 0;
-  int color_level_max = 255;
 
   [[nodiscard]] std::string format_header() const {
     return std::format("P3\n{} {}\n{}", image_width, image_height,
-                       color_level_max);
+                       pixmap_color_level_max);
   }
 
   [[nodiscard]] std::string format_pixel(const color &pixel_color) const {
-    auto color_channel_to_level = [this](double ch) noexcept -> int {
-      return int((double(color_level_max) + 0.999) * ch);
+    auto color_channel_to_level = [](double ch) noexcept -> int {
+      return int((double(pixmap_color_level_max) + 0.999) * ch);
     };
 
     return std::format("{} {} {}", color_channel_to_level(pixel_color.r()),

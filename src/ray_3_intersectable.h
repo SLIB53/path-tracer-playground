@@ -22,14 +22,14 @@ concept any_ray_3_intersectable_range =
 
 constexpr bool
 intersects(const any_ray_3_intersectable_range auto &intersectables,
-           const ray_3 &ray, interval ray_t, ray_3_intersection &out) noexcept {
+           const ray_3 &ray, interval ray_t, ray_3_intersection &out) {
   auto intersection = out;
   auto has_intersected = false;
   auto nearest_t = ray_t.max;
 
   for (const auto &i : intersectables) {
     std::visit(
-        [&](const auto &ic) {
+        [&](const ray_3_intersectable auto &ic) {
           if (ic.intersects(ray, interval(ray_t.min, nearest_t),
                             intersection)) {
             has_intersected = true;

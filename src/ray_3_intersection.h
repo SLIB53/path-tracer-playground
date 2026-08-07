@@ -1,13 +1,14 @@
 #pragma once
 
+#include "point_3.h"
 #include "ray_3.h"
 
 class ray_3_intersection {
 public:
-  double t;
+  double t = 0.0;
   point_3 point;
   vector_3 normal;
-  bool from_front;
+  bool from_front = false;
 };
 
 constexpr bool
