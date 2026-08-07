@@ -4,7 +4,7 @@
 
 #include "camera.h"
 #include "color.h"
-#include "ray_3_intersectable.h"
+#include "shape.h"
 
 class pixmap_formatter {
 public:
@@ -29,7 +29,7 @@ public:
 };
 
 void render(const pixmap_formatter &formatter, const camera &main_camera,
-            const any_ray_3_intersectable_range auto &world) {
+            const shape_range auto &world) {
   auto pixel_delta_u = main_camera.viewport_u() / formatter.image_width;
   auto pixel_delta_v = main_camera.viewport_v() / formatter.image_height;
   auto pixel_00_center =

@@ -1,8 +1,7 @@
 #include <vector>
 
 #include "render.h"
-
-using shape = any_ray_3_intersectable;
+#include "shape.h"
 
 constexpr int image_width = 1280;
 constexpr int image_height = 720;
