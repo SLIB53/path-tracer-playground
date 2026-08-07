@@ -1,5 +1,6 @@
 #pragma once
 
+#include "interval.h"
 #include "ray_3_intersection.h"
 
 class sphere {
@@ -9,8 +10,7 @@ public:
   constexpr sphere(const point_3 &center, double radius) noexcept
       : center_(center), radius_(radius) {}
 
-  constexpr bool intersects(const ray_3 &ray, double ray_t_min,
-                            double ray_t_max,
+  constexpr bool intersects(const ray_3 &ray, interval ray_t,
                             ray_3_intersection &out) const noexcept {
     auto ray_origin_toward_center = center_ - ray.origin();
 
@@ -25,14 +25,11 @@ public:
 
     auto discriminant_sqrt = std::sqrt(discriminant);
 
-    auto is_outside_t_range = [&ray_t_min, &ray_t_max](double d) -> bool {
-      return d < ray_t_min || d > ray_t_max;
-    };
     double root_nearest;
     if (root_nearest = (h - discriminant_sqrt) / a;
-        is_outside_t_range(root_nearest))
+        !ray_t.surrounds(root_nearest))
       if (root_nearest = (h + discriminant_sqrt) / a;
-          is_outside_t_range(root_nearest))
+          !ray_t.surrounds(root_nearest))
         return false;
 
     out.t = root_nearest;

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "color.h"
+#include "interval.h"
 #include "shape.h"
 
 constexpr int pixmap_max_level = 255;
@@ -68,11 +69,11 @@ template <class F> void write_pixels(F &&each_row) {
       return (1.0 - a) * c1 + a * c2;
     };
 
-    // Given the intersection where the pixel ray contacts the sphere, use the
+    // Given the intersection where the camera ray contacts the sphere, use the
     // normal vector at the contact point on the surface of the sphere to map to
     // a color.
     static const auto sphere_color =
-        [](ray_3_intersection intersection) -> color {
+        [](ray_3_intersection intersection) noexcept -> color {
       return 0.5 *
              (color(intersection.normal.x() + 1, intersection.normal.y() + 1,
                     intersection.normal.z() + 1));
@@ -81,15 +82,16 @@ template <class F> void write_pixels(F &&each_row) {
     point_3 pixel_center =
         pixel_00_center + (col * pixel_delta_u) + (row * pixel_delta_v);
 
-    ray_3 r(camera_center, pixel_center - camera_center);
+    ray_3 camera_ray(camera_center, pixel_center - camera_center);
 
     std::vector<shape> world{sphere(point_3(0.0, 0.0, -1.0), 0.5),
                              sphere(point_3(0, -100.5, -1), 100)};
 
-    ray_3_intersection rwi;
-    auto final_color = intersects(world, r, 0.0, 1000.0, rwi)
-                           ? sphere_color(rwi)
-                           : background_color(r);
+    ray_3_intersection intersection;
+    auto final_color =
+        intersects(world, camera_ray, gte_zero_interval, intersection)
+            ? sphere_color(intersection)
+            : background_color(camera_ray);
 
     // Write
 
