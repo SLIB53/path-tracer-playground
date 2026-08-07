@@ -1,5 +1,4 @@
-#ifndef RAY_3
-#define RAY_3
+#pragma once
 
 #include "point_3.h"
 #include "vector_3.h"
@@ -27,5 +26,3 @@ private:
   point_3 origin_;
   vector_3 direction_;
 };
-
-#endif

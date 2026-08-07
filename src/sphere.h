@@ -1,5 +1,4 @@
-#ifndef SPHERE
-#define SPHERE
+#pragma once
 
 #include "ray_3_intersection.h"
 
@@ -48,5 +47,3 @@ private:
   point_3 center_;
   double radius_;
 };
-
-#endif

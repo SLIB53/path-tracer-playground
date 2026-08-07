@@ -1,5 +1,4 @@
-#ifndef RAY_3_INTERSECTION
-#define RAY_3_INTERSECTION
+#pragma once
 
 #include "ray_3.h"
 
@@ -20,5 +19,3 @@ intersects_from_front(const ray_3 &ray, const vector_3 &front_normal,
 
   return from_front;
 }
-
-#endif

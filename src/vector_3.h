@@ -1,5 +1,4 @@
-#ifndef VECTOR_3
-#define VECTOR_3
+#pragma once
 
 #include <array>
 #include <cassert>
@@ -122,5 +121,3 @@ constexpr vector_3 cross(const vector_3 &u, const vector_3 &v) noexcept {
 }
 
 inline vector_3 norm(const vector_3 &v) noexcept { return v / v.length(); }
-
-#endif

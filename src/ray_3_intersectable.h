@@ -1,5 +1,4 @@
-#ifndef RAY_3_INTERSECTABLE
-#define RAY_3_INTERSECTABLE
+#pragma once
 
 #include <ranges>
 #include <variant>
@@ -46,5 +45,3 @@ intersects(const any_ray_3_intersectable_range auto &intersectables,
 
   return has_intersected;
 }
-
-#endif
