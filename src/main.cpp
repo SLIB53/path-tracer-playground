@@ -1,8 +1,9 @@
 #include <cstdio>
 #include <print>
+#include <vector>
 
 #include "color.h"
-#include "sphere.h"
+#include "shape.h"
 
 constexpr int pixmap_max_level = 255;
 
@@ -82,12 +83,13 @@ template <class F> void write_pixels(F &&each_row) {
 
     ray_3 r(camera_center, pixel_center - camera_center);
 
-    sphere s(point_3(0.0, 0.0, -1.0), 0.5);
+    std::vector<shape> world{sphere(point_3(0.0, 0.0, -1.0), 0.5),
+                             sphere(point_3(0, -100.5, -1), 100)};
 
-    ray_3_intersection rsi;
-
-    auto final_color = s.intersects(r, 0.0, 1000.0, rsi) ? sphere_color(rsi)
-                                                         : background_color(r);
+    ray_3_intersection rwi;
+    auto final_color = intersects(world, r, 0.0, 1000.0, rwi)
+                           ? sphere_color(rwi)
+                           : background_color(r);
 
     // Write
 
