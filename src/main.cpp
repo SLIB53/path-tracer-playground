@@ -2,10 +2,7 @@
 #include <print>
 
 #include "color.h"
-#include "point_3.h"
-#include "ray_3.h"
 #include "sphere.h"
-#include "vector_3.h"
 
 constexpr int pixmap_max_level = 255;
 

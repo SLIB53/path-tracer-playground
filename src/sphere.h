@@ -1,7 +1,7 @@
 #ifndef SPHERE
 #define SPHERE
 
-#include "ray_3.h"
+#include "ray_3_intersection.h"
 
 class sphere {
 public:
