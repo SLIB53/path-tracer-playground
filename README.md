@@ -1,1 +1,1 @@
-# Pathtracer Playground
+# Path Tracer Playground
