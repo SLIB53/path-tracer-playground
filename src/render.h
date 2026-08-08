@@ -35,8 +35,9 @@ private:
 
 void render(const pixmap_formatter &formatter, const camera &main_camera,
             const shape_range auto &world) {
-  auto pixel_delta_u = main_camera.viewport_u() / formatter.image_width;
-  auto pixel_delta_v = main_camera.viewport_v() / formatter.image_height;
+  auto pixel_delta_u = main_camera.viewport_u() / formatter.image_width,
+       pixel_delta_v = main_camera.viewport_v() / formatter.image_height;
+
   auto pixel_00_center =
       main_camera.viewport_origin() + (pixel_delta_u + pixel_delta_v) / 2.0;
 
@@ -54,8 +55,7 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
           [](const ray_3 &ray) noexcept -> color {
         auto a = (norm(ray.direction()).y() + 1.0) / 2.0;
 
-        color c1(1.0, 1.0, 1.0);
-        color c2(0.5, 0.7, 1.0);
+        color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
 
         auto result = (1.0 - a) * c1 + a * c2;
         assert_color(result);
@@ -100,17 +100,17 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
       if (static constexpr int ssaa_samples_per_pixel = 100;
           ssaa_samples_per_pixel > 0) {
         for (int s = 0; s < ssaa_samples_per_pixel; ++s) {
-          static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-          static std::mt19937 generator;
-          double u_jittered = col + distribution(generator) - 0.5;
-          double v_jittered = row + distribution(generator) - 0.5;
+          thread_local std::uniform_real_distribution<double> distribution(0.0,
+                                                                           1.0);
+          thread_local std::mt19937 generator;
+          auto u_jittered = col + distribution(generator) - 0.5,
+               v_jittered = row + distribution(generator) - 0.5;
 
           final_color += pixel_sample_color(u_jittered, v_jittered);
         }
         final_color /= ssaa_samples_per_pixel;
       } else {
-        double u = col;
-        double v = row;
+        auto u = col, v = row;
 
         final_color = pixel_sample_color(u, v);
       }
