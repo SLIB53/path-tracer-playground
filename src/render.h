@@ -74,7 +74,7 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
         unsigned int trace_depth = 0, max_trace_depth = 16;
         for (ray_3_intersection intersection;
              trace_depth < max_trace_depth &&
-             intersects(world, trace_tail, interval(0.0, +infinity),
+             intersects(world, trace_tail, interval(0.001, +infinity),
                         intersection);) {
           trace_tail =
               ray_3(intersection.point,
