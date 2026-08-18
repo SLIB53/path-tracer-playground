@@ -90,7 +90,7 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
       };
 
       color super_sampled_color;
-      if (static constexpr int super_samples_per_pixel = 32;
+      if (static constexpr int super_samples_per_pixel = 128;
           super_samples_per_pixel > 0) {
         for (int s = 0; s < super_samples_per_pixel; ++s) {
           thread_local std::mt19937 generator{std::random_device{}()};

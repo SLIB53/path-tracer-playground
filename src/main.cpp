@@ -3,8 +3,8 @@
 #include "render.h"
 #include "shape.h"
 
-constexpr int image_width = 640;
-constexpr int image_height = 360;
+constexpr int image_width = 1280;
+constexpr int image_height = 720;
 constexpr double image_aspect_ratio = double(image_width) / image_height;
 
 int main() {
