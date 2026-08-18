@@ -4,7 +4,7 @@
 
 constexpr auto infinity = std::numeric_limits<double>::infinity();
 
-class interval {
+class [[nodiscard]] interval {
 public:
   double min, max;
 

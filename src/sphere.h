@@ -3,7 +3,7 @@
 #include "interval.h"
 #include "ray_3_intersection.h"
 
-class sphere {
+class [[nodiscard]] sphere {
 public:
   constexpr sphere() noexcept = default;
 
