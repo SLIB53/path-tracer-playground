@@ -50,7 +50,7 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
     for (int col = 0; col < formatter.image_width; ++col) {
       // Shade
 
-      // Given the camera ray, interpolate a gradient.
+      // Given the path ray, interpolate a gradient.
       static const auto background_color =
           [](const ray_3 &ray) noexcept -> color {
         auto a = (norm(ray.direction()).y() + 1.0) / 2.0;
@@ -63,52 +63,45 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
         return result;
       };
 
-      // Given the intersection where the camera ray contacts a shape, use the
-      // normal vector at the contact point on the surface of the sphere to map
-      // to a color.
-      static const auto shape_color =
-          [](ray_3_intersection intersection) noexcept -> color {
-        auto result = 0.5 * (color(intersection.normal.x() + 1,
-                                   intersection.normal.y() + 1,
-                                   intersection.normal.z() + 1));
-        assert_color(result);
-
-        return result;
-      };
-
-      // Given a pixel's (u, v) coordinates, sample the world from the main
-      // camera.
+      // Given a pixel's (u, v) coordinates, sample the world from the pixel.
       const auto pixel_sample_color = [&](double u,
                                           double v) noexcept -> color {
         auto pixel_sample_center =
             pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
 
-        ray_3 camera_ray(main_camera.station_point,
+        ray_3 trace_tail(main_camera.station_point,
                          pixel_sample_center - main_camera.station_point);
+        unsigned int trace_depth = 0, max_trace_depth = 16;
+        for (ray_3_intersection intersection;
+             trace_depth < max_trace_depth &&
+             intersects(world, trace_tail, interval(0.0, +infinity),
+                        intersection);) {
+          trace_tail =
+              ray_3(intersection.point,
+                    vector_3::random_on_unit_hemisphere(intersection.normal));
+          ++trace_depth;
+        }
 
-        ray_3_intersection intersection;
-        auto result = intersects(world, camera_ray, interval(0.0, +infinity),
-                                 intersection)
-                          ? shape_color(intersection)
-                          : background_color(camera_ray);
+        color result = background_color(trace_tail) / (1 << trace_depth);
         assert_color(result);
 
         return result;
       };
 
       color final_color;
-      if (static constexpr int ssaa_samples_per_pixel = 100;
-          ssaa_samples_per_pixel > 0) {
-        for (int s = 0; s < ssaa_samples_per_pixel; ++s) {
+      if (static constexpr int super_samples_per_pixel = 32;
+          super_samples_per_pixel > 0) {
+        for (int s = 0; s < super_samples_per_pixel; ++s) {
           thread_local std::mt19937 generator{std::random_device{}()};
-          std::uniform_real_distribution<double> distribution(0.0, 1.0);
+          thread_local std::uniform_real_distribution<double> distribution(0.0,
+                                                                           1.0);
 
           auto u_jittered = col + distribution(generator) - 0.5,
                v_jittered = row + distribution(generator) - 0.5;
 
           final_color += pixel_sample_color(u_jittered, v_jittered);
         }
-        final_color /= ssaa_samples_per_pixel;
+        final_color /= super_samples_per_pixel;
       } else {
         auto u = col, v = row;
 
