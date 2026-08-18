@@ -76,9 +76,10 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
              trace_depth < max_trace_depth &&
              intersects(world, trace_tail, interval(0.001, +infinity),
                         intersection);) {
-          trace_tail =
-              ray_3(intersection.point,
-                    vector_3::random_on_unit_hemisphere(intersection.normal));
+          trace_tail = ray_3(
+              intersection.point,
+              intersection.normal +
+                  vector_3::random_on_unit_sphere()); // Lambertian reflectance
           ++trace_depth;
         }
 
@@ -88,7 +89,7 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
         return result;
       };
 
-      color final_color;
+      color super_sampled_color;
       if (static constexpr int super_samples_per_pixel = 32;
           super_samples_per_pixel > 0) {
         for (int s = 0; s < super_samples_per_pixel; ++s) {
@@ -99,14 +100,18 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
           auto u_jittered = col + distribution(generator) - 0.5,
                v_jittered = row + distribution(generator) - 0.5;
 
-          final_color += pixel_sample_color(u_jittered, v_jittered);
+          super_sampled_color += pixel_sample_color(u_jittered, v_jittered);
         }
-        final_color /= super_samples_per_pixel;
+        super_sampled_color /= super_samples_per_pixel;
       } else {
         auto u = col, v = row;
 
-        final_color = pixel_sample_color(u, v);
+        super_sampled_color = pixel_sample_color(u, v);
       }
+      assert_color(super_sampled_color);
+
+      color final_color(linear_to_gamma_color(super_sampled_color));
+      assert_color(final_color);
 
       // Output
 
