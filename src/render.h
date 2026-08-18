@@ -100,9 +100,9 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
       if (static constexpr int ssaa_samples_per_pixel = 100;
           ssaa_samples_per_pixel > 0) {
         for (int s = 0; s < ssaa_samples_per_pixel; ++s) {
-          thread_local std::uniform_real_distribution<double> distribution(0.0,
-                                                                           1.0);
-          thread_local std::mt19937 generator;
+          thread_local std::mt19937 generator{std::random_device{}()};
+          std::uniform_real_distribution<double> distribution(0.0, 1.0);
+
           auto u_jittered = col + distribution(generator) - 0.5,
                v_jittered = row + distribution(generator) - 0.5;
 

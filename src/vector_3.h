@@ -4,6 +4,13 @@
 #include <cassert>
 #include <cmath>
 #include <format>
+#include <random>
+
+class vector_3;
+
+constexpr vector_3 operator/(const vector_3 &, double) noexcept;
+
+constexpr double dot(const vector_3 &, const vector_3 &) noexcept;
 
 class vector_3 {
 public:
@@ -68,6 +75,32 @@ public:
   }
 
   double length() const noexcept { return std::sqrt(length_squared()); }
+
+  static vector_3 random(double min = 0.0, double max = 1.0) {
+    thread_local std::mt19937 generator{std::random_device{}()};
+    std::uniform_real_distribution<double> distribution(min, max);
+
+    return vector_3(distribution(generator), distribution(generator),
+                    distribution(generator));
+  }
+
+  static vector_3 random_on_unit_sphere() {
+    constexpr auto delta = 1e-160;
+
+    while (true) {
+      auto candidate = vector_3::random(-1.0, 1.0);
+
+      if (auto candidate_length_squared = candidate.length_squared();
+          delta < candidate_length_squared && candidate_length_squared <= 1.0)
+        return candidate / std::sqrt(candidate_length_squared);
+    }
+  }
+
+  static vector_3 random_on_unit_hemisphere(const vector_3 &normal) {
+    auto candidate = vector_3::random_on_unit_sphere();
+
+    return dot(candidate, normal) > 0.0 ? candidate : -candidate;
+  }
 };
 
 template <> struct std::formatter<vector_3> : std::formatter<double> {
@@ -79,12 +112,6 @@ template <> struct std::formatter<vector_3> : std::formatter<double> {
     return std::formatter<double>::format(v.elements[2], ctx);
   }
 };
-
-// inline std::ostream &operator<<(std::ostream &out, const spatial_vector_3 &v)
-// {
-//   return out << std::format("{} {} {}", v.elements[0], v.elements[1],
-//                             v.elements[2]);
-// }
 
 constexpr vector_3 operator+(const vector_3 &u, const vector_3 &v) noexcept {
   return vector_3(u.elements[0] + v.elements[0], u.elements[1] + v.elements[1],
@@ -108,6 +135,8 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
   return (1 / t) * v;
 }
 
+inline vector_3 norm(const vector_3 &v) noexcept { return v / v.length(); }
+
 constexpr double dot(const vector_3 &u, const vector_3 &v) noexcept {
   return u.elements[0] * v.elements[0] + u.elements[1] * v.elements[1] +
          u.elements[2] * v.elements[2];
@@ -119,5 +148,3 @@ constexpr vector_3 cross(const vector_3 &u, const vector_3 &v) noexcept {
                   u.elements[0] * v.elements[1] -
                       u.elements[1] * v.elements[0]);
 }
-
-inline vector_3 norm(const vector_3 &v) noexcept { return v / v.length(); }
