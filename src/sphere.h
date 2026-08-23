@@ -1,14 +1,15 @@
 #pragma once
 
 #include "interval.h"
-#include "ray_3_intersection.h"
+#include "material.h"
 
 class [[nodiscard]] sphere {
 public:
   constexpr sphere() noexcept = default;
 
-  constexpr sphere(const point_3 &center, double radius) noexcept
-      : center_(center), radius_(radius) {}
+  constexpr sphere(const point_3 &center, double radius,
+                   std::shared_ptr<material> surface_material) noexcept
+      : center_(center), radius_(radius), surface_material_(surface_material) {}
 
   constexpr bool intersects(const ray_3 &ray, interval ray_t,
                             ray_3_intersection &out) const noexcept {
@@ -34,6 +35,7 @@ public:
 
     out.t = root_nearest;
     out.point = ray.at(out.t);
+    out.surface_material = surface_material_;
     out.from_front =
         intersects_from_front(ray, (out.point - center_) / radius_, out.normal);
 
@@ -43,4 +45,5 @@ public:
 private:
   point_3 center_;
   double radius_ = 0.0;
+  std::shared_ptr<material> surface_material_;
 };
