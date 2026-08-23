@@ -15,9 +15,9 @@ static const auto material_diffuse_light_green =
 static const auto material_diffuse_navy =
     std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
 static const auto material_metal_light_gray =
-    std::make_shared<metal>(color(0.8, 0.8, 0.8));
+    std::make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
 static const auto material_metal_greenish =
-    std::make_shared<metal>(color(0.8, 0.6, 0.2));
+    std::make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
 
 int main() {
   pixmap_formatter formatter;

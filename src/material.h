@@ -39,13 +39,16 @@ private:
 
 class metal : public material {
 public:
-  metal(const color &albedo) : albedo_(albedo) {}
+  metal(const color &albedo, double fuzz) : albedo_(albedo), fuzz_(fuzz) {}
 
   bool scatter(const ray_3 &incoming_ray,
                const ray_3_intersection &intersection, color &out_attenuation,
                ray_3 &out_scattered_ray) const override {
+    auto reflection =
+        norm(reflect(incoming_ray.direction(), intersection.normal));
+
     auto scatter_direction =
-        reflect(incoming_ray.direction(), intersection.normal);
+        reflection + fuzz_ * vector_3::random_on_unit_hemisphere(reflection);
 
     out_scattered_ray = ray_3(intersection.point, scatter_direction);
     out_attenuation = albedo_;
@@ -55,4 +58,5 @@ public:
 
 private:
   color albedo_;
+  double fuzz_;
 };
