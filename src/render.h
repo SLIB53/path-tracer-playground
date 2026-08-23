@@ -34,11 +34,67 @@ private:
 
 void render(const pixmap_formatter &formatter, const camera &main_camera,
             const shape_range auto &world) {
-  auto pixel_delta_u = main_camera.viewport_u() / formatter.image_width,
-       pixel_delta_v = main_camera.viewport_v() / formatter.image_height;
+  // Given the path ray, interpolate a gradient.
+  static const auto background_color = [](const ray_3 &ray) noexcept -> color {
+    auto a = (norm(ray.direction()).y() + 1.0) / 2.0;
 
-  auto pixel_00_center =
-      main_camera.viewport_origin() + (pixel_delta_u + pixel_delta_v) / 2.0;
+    color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
+
+    auto result = (1.0 - a) * c1 + a * c2;
+    assert_color(result);
+
+    return result;
+  };
+
+  // Given a pixel's (u, v) coordinates, sample the world from the pixel.
+  const auto pixel_sample_color =
+      [&formatter, &main_camera, &world](double u, double v) noexcept -> color {
+    vector_3 pixel_sample_center;
+    {
+      auto pixel_delta_u = main_camera.viewport_u() / formatter.image_width,
+           pixel_delta_v = main_camera.viewport_v() / formatter.image_height;
+
+      auto pixel_00_center =
+          main_camera.viewport_origin() + (pixel_delta_u + pixel_delta_v) / 2.0;
+
+      pixel_sample_center =
+          pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
+    }
+
+    color trace_accumulation =
+        color(1.0, 1.0, 1.0); // HACK: initial value of (1, 1, 1) won't
+                              // contribute in pairwise multiplication.
+    ray_3 trace_tail(main_camera.station_point,
+                     pixel_sample_center - main_camera.station_point);
+    {
+      static constexpr unsigned int max_trace_depth = 16;
+      for (unsigned int trace_depth = 0; trace_depth < max_trace_depth;
+           ++trace_depth) {
+        ray_3_intersection intersection;
+        if (!intersects(world, trace_tail, interval(0.001, +infinity),
+                        intersection))
+          break;
+
+        color attenuation;
+        ray_3 scattered_ray;
+        if (!intersection.surface_material->scatter(trace_tail, intersection,
+                                                    attenuation, scattered_ray))
+          break;
+
+        assert(!approximately_equals(scattered_ray.direction(), vector_3()));
+
+        trace_accumulation = pairwise_multiply(trace_accumulation, attenuation);
+
+        trace_tail = scattered_ray;
+      }
+    }
+
+    color result =
+        pairwise_multiply(trace_accumulation, background_color(trace_tail));
+    assert_color(result);
+
+    return result;
+  };
 
   std::println("{}", formatter.format_header());
 
@@ -48,62 +104,6 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
 
     for (int col = 0; col < formatter.image_width; ++col) {
       // Shade
-
-      // Given the path ray, interpolate a gradient.
-      static const auto background_color =
-          [](const ray_3 &ray) noexcept -> color {
-        auto a = (norm(ray.direction()).y() + 1.0) / 2.0;
-
-        color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
-
-        auto result = (1.0 - a) * c1 + a * c2;
-        assert_color(result);
-
-        return result;
-      };
-
-      // Given a pixel's (u, v) coordinates, sample the world from the pixel.
-      const auto pixel_sample_color = [&](double u,
-                                          double v) noexcept -> color {
-        auto pixel_sample_center =
-            pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
-
-        color trace_accumulation =
-            color(1.0, 1.0, 1.0); // HACK: initial value of (1, 1, 1) won't
-                                  // contribute in pairwise multiplication.
-        ray_3 trace_tail(main_camera.station_point,
-                         pixel_sample_center - main_camera.station_point);
-        {
-          static constexpr unsigned int max_trace_depth = 16;
-          for (unsigned int trace_depth = 0; trace_depth < max_trace_depth;
-               ++trace_depth) {
-            ray_3_intersection intersection;
-            if (!intersects(world, trace_tail, interval(0.001, +infinity),
-                            intersection))
-              break;
-
-            color attenuation;
-            ray_3 scattered_ray;
-            if (!intersection.surface_material->scatter(
-                    trace_tail, intersection, attenuation, scattered_ray))
-              break;
-
-            assert(
-                !approximately_equals(scattered_ray.direction(), vector_3()));
-
-            trace_accumulation =
-                pairwise_multiply(trace_accumulation, attenuation);
-
-            trace_tail = scattered_ray;
-          }
-        }
-
-        color result =
-            pairwise_multiply(trace_accumulation, background_color(trace_tail));
-        assert_color(result);
-
-        return result;
-      };
 
       color super_sampled_color;
       if (static constexpr int super_samples_per_pixel = 128;
