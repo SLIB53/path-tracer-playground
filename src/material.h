@@ -8,9 +8,10 @@ class material {
 public:
   virtual ~material() = default;
 
-  virtual bool scatter(const ray_3 &incoming_ray,
-                       const ray_3_intersection &intersection,
-                       color &out_attenuation, ray_3 &out_scattered_ray) const {
+  virtual bool scatter([[maybe_unused]] const ray_3 &incoming_ray,
+                       [[maybe_unused]] const ray_3_intersection &intersection,
+                       [[maybe_unused]] color &out_attenuation,
+                       [[maybe_unused]] ray_3 &out_scattered_ray) const {
     return false;
   }
 };
@@ -19,8 +20,8 @@ class lambertian : public material {
 public:
   lambertian(const color &albedo) : albedo_(albedo) {}
 
-  bool scatter(const ray_3 &incoming_ray,
-               const ray_3_intersection &intersection, color &out_attenuation,
+  bool scatter(const ray_3 &, const ray_3_intersection &intersection,
+               color &out_attenuation,
                ray_3 &out_scattered_ray) const override {
     auto scatter_direction =
         intersection.normal + vector_3::random_on_unit_sphere();
