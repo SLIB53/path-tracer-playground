@@ -10,7 +10,7 @@ linear_to_gamma_color_channel(double ch) noexcept {
   return ch > 0 ? std::sqrt(ch) : 0;
 };
 
-constexpr color linear_to_gamma_color(const color &c) noexcept {
+[[nodiscard]] constexpr color linear_to_gamma_color(const color &c) noexcept {
   return color(linear_to_gamma_color_channel(c.r()),
                linear_to_gamma_color_channel(c.g()),
                linear_to_gamma_color_channel(c.b()));

@@ -7,6 +7,18 @@ constexpr int image_width = 1280;
 constexpr int image_height = 720;
 constexpr double image_aspect_ratio = double(image_width) / image_height;
 
+// static const auto gray_lambertian_diffuse_material =
+//     std::make_shared<lambertian>(color(0.5, 0.5, 0.5));
+
+static const auto material_diffuse_light_green =
+    std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
+static const auto material_diffuse_navy =
+    std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
+static const auto material_metal_light_gray =
+    std::make_shared<metal>(color(0.8, 0.8, 0.8));
+static const auto material_metal_greenish =
+    std::make_shared<metal>(color(0.8, 0.6, 0.2));
+
 int main() {
   pixmap_formatter formatter;
   formatter.image_width = image_width;
@@ -17,8 +29,15 @@ int main() {
   main_camera.viewport_height = 2.0;
   main_camera.viewport_width = main_camera.viewport_height * image_aspect_ratio;
 
-  std::vector<shape> world{sphere(point_3(0.0, 0.0, -1.0), 0.5),
-                           sphere(point_3(0, -100.5, -1), 100)};
+  // std::vector<shape> world{
+  //     sphere(point_3(0.0, 0.0, -1.0), 0.5, gray_lambertian_diffuse_material),
+  //     sphere(point_3(0, -100.5, -1), 100, gray_lambertian_diffuse_material)};
+
+  std::vector<shape> world{
+      sphere(point_3(0.0, -100.5, -1.0), 100.0, material_diffuse_light_green),
+      sphere(point_3(0.0, 0.0, -1.2), 0.5, material_diffuse_navy),
+      sphere(point_3(-1.0, 0.0, -1.0), 0.5, material_metal_light_gray),
+      sphere(point_3(1.0, 0.0, -1.0), 0.5, material_metal_greenish)};
 
   render(formatter, main_camera, world);
 

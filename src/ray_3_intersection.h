@@ -1,13 +1,18 @@
 #pragma once
 
+#include <memory>
+
 #include "point_3.h"
 #include "ray_3.h"
+
+class material;
 
 class ray_3_intersection {
 public:
   double t = 0.0;
   point_3 point;
   vector_3 normal;
+  std::shared_ptr<material> surface_material;
   bool from_front = false;
 };
 

@@ -4,7 +4,6 @@
 #include <random>
 
 #include "camera.h"
-#include "color.h"
 #include "shape.h"
 
 class pixmap_formatter {
@@ -69,21 +68,38 @@ void render(const pixmap_formatter &formatter, const camera &main_camera,
         auto pixel_sample_center =
             pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
 
+        color trace_accumulation =
+            color(1.0, 1.0, 1.0); // HACK: initial value of (1, 1, 1) won't
+                                  // contribute in pairwise multiplication.
         ray_3 trace_tail(main_camera.station_point,
                          pixel_sample_center - main_camera.station_point);
-        unsigned int trace_depth = 0, max_trace_depth = 16;
-        for (ray_3_intersection intersection;
-             trace_depth < max_trace_depth &&
-             intersects(world, trace_tail, interval(0.001, +infinity),
-                        intersection);) {
-          trace_tail = ray_3(
-              intersection.point,
-              intersection.normal +
-                  vector_3::random_on_unit_sphere()); // Lambertian reflectance
-          ++trace_depth;
+        {
+          static constexpr unsigned int max_trace_depth = 16;
+          for (unsigned int trace_depth = 0; trace_depth < max_trace_depth;
+               ++trace_depth) {
+            ray_3_intersection intersection;
+            if (!intersects(world, trace_tail, interval(0.001, +infinity),
+                            intersection))
+              break;
+
+            color attenuation;
+            ray_3 scattered_ray;
+            if (!intersection.surface_material->scatter(
+                    trace_tail, intersection, attenuation, scattered_ray))
+              break;
+
+            assert(
+                !approximately_equals(scattered_ray.direction(), vector_3()));
+
+            trace_accumulation =
+                pairwise_multiply(trace_accumulation, attenuation);
+
+            trace_tail = scattered_ray;
+          }
         }
 
-        color result = background_color(trace_tail) / (1 << trace_depth);
+        color result =
+            pairwise_multiply(trace_accumulation, background_color(trace_tail));
         assert_color(result);
 
         return result;
