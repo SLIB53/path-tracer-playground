@@ -1,7 +1,6 @@
 #pragma once
 
 #include "color.h"
-#include "ray_3.h"
 #include "ray_3_intersection.h"
 
 class material {
@@ -28,8 +27,8 @@ public:
     if (approximately_equals(scatter_direction, vector_3()))
       scatter_direction = intersection.normal;
 
-    out_scattered_ray = ray_3(intersection.point, scatter_direction);
     out_attenuation = albedo_;
+    out_scattered_ray = ray_3(intersection.point, scatter_direction);
 
     return true;
   }
@@ -51,8 +50,8 @@ public:
     auto scatter_direction =
         reflection + fuzz_ * vector_3::random_on_unit_hemisphere(reflection);
 
-    out_scattered_ray = ray_3(intersection.point, scatter_direction);
     out_attenuation = albedo_;
+    out_scattered_ray = ray_3(intersection.point, scatter_direction);
 
     return true;
   }
@@ -60,4 +59,69 @@ public:
 private:
   color albedo_;
   double fuzz_;
+};
+
+class dielectric : public material {
+public:
+  dielectric(double refraction_index) : refraction_index_(refraction_index) {}
+
+  bool scatter(const ray_3 &incoming_ray,
+               const ray_3_intersection &intersection, color &out_attenuation,
+               ray_3 &out_scattered_ray) const override {
+    out_attenuation = color(1.0, 1.0, 1.0);
+
+    // out_scattered_ray
+    {
+      auto refraction_index_of_intersection = intersection.from_front
+                                                  ? (1.0 / refraction_index_)
+                                                  : refraction_index_;
+
+      auto incoming_ray_direction_normalized = norm(incoming_ray.direction());
+
+      bool reflect_incoming_ray;
+      {
+        auto cos_theta_from_intersection_normal = std::fmin(
+            dot(-incoming_ray_direction_normalized, intersection.normal), 1.0);
+
+        auto sin_theta_from_intersection_normal =
+            std::sqrt(1.0 - cos_theta_from_intersection_normal *
+                                cos_theta_from_intersection_normal);
+
+        bool total_internal_reflection =
+            refraction_index_of_intersection *
+                sin_theta_from_intersection_normal >
+            1.0;
+
+        auto r = (1 - refraction_index_of_intersection) /
+                 (1 + refraction_index_of_intersection);
+        r *= r;
+        auto shclick_reflectance =
+            r + (1 - r) * std::pow((1 - cos_theta_from_intersection_normal), 5);
+
+        thread_local std::mt19937 generator{std::random_device{}()};
+        thread_local std::uniform_real_distribution<double> distribution(0.0,
+                                                                         1.0);
+        bool schlick_reflection = shclick_reflectance > distribution(generator);
+
+        reflect_incoming_ray = total_internal_reflection || schlick_reflection;
+      }
+
+      vector_3 out_direction;
+      {
+        out_direction = reflect_incoming_ray
+                            ? reflect(incoming_ray_direction_normalized,
+                                      intersection.normal)
+                            : refract(incoming_ray_direction_normalized,
+                                      intersection.normal,
+                                      refraction_index_of_intersection);
+      }
+
+      out_scattered_ray = ray_3(intersection.point, out_direction);
+    }
+
+    return true;
+  }
+
+private:
+  double refraction_index_;
 };

@@ -148,6 +148,11 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
          std::fabs(difference[2]) < tolerance;
 }
 
+[[nodiscard]] constexpr vector_3 pairwise_multiply(const vector_3 &u,
+                                                   const vector_3 &v) noexcept {
+  return vector_3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
+}
+
 [[nodiscard]] inline vector_3 norm(const vector_3 &v) noexcept {
   return v / v.length();
 }
@@ -171,7 +176,13 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
   return v - 2 * dot(v, n) * n;
 }
 
-[[nodiscard]] constexpr vector_3 pairwise_multiply(const vector_3 &u,
-                                                   const vector_3 &v) noexcept {
-  return vector_3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
+[[nodiscard]] inline vector_3 refract(const vector_3 &r, const vector_3 &n,
+                                      double eta_over_eta_prime) noexcept {
+  auto cos_theta = std::fmin(dot(-r, n), 1.0);
+
+  vector_3 r_prime_perp = eta_over_eta_prime * (r + cos_theta * n),
+           r_prime_par =
+               -std::sqrt(std::fabs(1.0 - r_prime_perp.length_squared())) * n;
+
+  return r_prime_perp + r_prime_par;
 }

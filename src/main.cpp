@@ -1,5 +1,7 @@
+#include <memory>
 #include <vector>
 
+#include "material.h"
 #include "render.h"
 #include "shape.h"
 
@@ -12,10 +14,14 @@ constexpr double image_aspect_ratio = double(image_width) / image_height;
 
 static const auto material_diffuse_light_green =
     std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
+
 static const auto material_diffuse_navy =
     std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
-static const auto material_metal_light_gray =
-    std::make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
+
+static const auto material_dielectric_glass = std::make_shared<dielectric>(1.5);
+static const auto material_dielectric_glass_inner =
+    std::make_shared<dielectric>(1.0 / 1.5);
+
 static const auto material_metal_greenish =
     std::make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
 
@@ -36,7 +42,8 @@ int main() {
   std::vector<shape> world{
       sphere(point_3(0.0, -100.5, -1.0), 100.0, material_diffuse_light_green),
       sphere(point_3(0.0, 0.0, -1.2), 0.5, material_diffuse_navy),
-      sphere(point_3(-1.0, 0.0, -1.0), 0.5, material_metal_light_gray),
+      sphere(point_3(-1.0, 0.0, -1.0), 0.5, material_dielectric_glass),
+      sphere(point_3(-1.0, 0.0, -1.0), 0.4, material_dielectric_glass_inner),
       sphere(point_3(1.0, 0.0, -1.0), 0.5, material_metal_greenish)};
 
   render(formatter, main_camera, world);
