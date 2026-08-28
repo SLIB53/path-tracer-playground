@@ -33,17 +33,13 @@ public:
   }
 
 private:
-  [[nodiscard]] inline double viewport_height() const noexcept {
-    return 2.0 * viewport_distance *
-           std::tan(field_of_view_vertical_angle / 2.0);
-  }
-
   [[nodiscard]] inline double viewport_width() const noexcept {
     return viewport_height() * viewport_aspect_ratio;
   }
 
-  inline vector_3 orthonormal_basis_w() const noexcept {
-    return norm(principal_ray.origin() - principal_ray.direction());
+  [[nodiscard]] inline double viewport_height() const noexcept {
+    return 2.0 * viewport_distance *
+           std::tan(field_of_view_vertical_angle / 2.0);
   }
 
   inline vector_3 orthonormal_basis_u() const noexcept {
@@ -52,6 +48,10 @@ private:
 
   inline vector_3 orthonormal_basis_v() const noexcept {
     return norm(cross(orthonormal_basis_w(), orthonormal_basis_u()));
+  }
+
+  inline vector_3 orthonormal_basis_w() const noexcept {
+    return norm(principal_ray.origin() - principal_ray.direction());
   }
 
   [[nodiscard]] inline double depth_of_field_disk_radius() const noexcept {
