@@ -6,7 +6,9 @@ class [[nodiscard]] camera {
 public:
   vector_3 up;
   ray_3 principal_ray;
-  double vertical_field_of_view = 0.0;
+  double field_of_view_vertical_angle = 0.0;
+  double depth_of_field_angle = 0.0;
+  double viewport_distance = 0.0;
   double viewport_aspect_ratio = 0.0;
 
   inline vector_3 viewport_u() const noexcept {
@@ -18,13 +20,22 @@ public:
   }
 
   inline point_3 viewport_origin() const noexcept {
-    return principal_ray.direction() - viewport_u() / 2.0 - viewport_v() / 2.0;
+    return principal_ray.origin() - viewport_distance * orthonormal_basis_w() -
+           viewport_u() / 2.0 - viewport_v() / 2.0;
+  }
+
+  inline vector_3 depth_of_field_disk_u() const noexcept {
+    return depth_of_field_disk_radius() * orthonormal_basis_u();
+  }
+
+  inline vector_3 depth_of_field_disk_v() const noexcept {
+    return depth_of_field_disk_radius() * orthonormal_basis_v();
   }
 
 private:
   [[nodiscard]] inline double viewport_height() const noexcept {
-    return 2.0 * std::tan(vertical_field_of_view / 2.0) *
-           principal_ray.length();
+    return 2.0 * viewport_distance *
+           std::tan(field_of_view_vertical_angle / 2.0);
   }
 
   [[nodiscard]] inline double viewport_width() const noexcept {
@@ -41,5 +52,9 @@ private:
 
   inline vector_3 orthonormal_basis_v() const noexcept {
     return norm(cross(orthonormal_basis_w(), orthonormal_basis_u()));
+  }
+
+  [[nodiscard]] inline double depth_of_field_disk_radius() const noexcept {
+    return viewport_distance * std::tan(depth_of_field_angle / 2.0);
   }
 };

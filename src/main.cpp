@@ -28,7 +28,9 @@ int main() {
   main_camera.up = vector_3(0.0, 1.0, 0.0);
   main_camera.principal_ray =
       ray_3(point_3(-2.0, 2.0, 1.0), point_3(0.0, 0.0, -1.0));
-  main_camera.vertical_field_of_view = std::numbers::pi / 9.0;
+  main_camera.field_of_view_vertical_angle = std::numbers::pi / 9.0;
+  main_camera.depth_of_field_angle = std::numbers::pi / 18.0;
+  main_camera.viewport_distance = 3.4;
   main_camera.viewport_aspect_ratio = image_aspect_ratio;
 
   std::vector<shape> world{
