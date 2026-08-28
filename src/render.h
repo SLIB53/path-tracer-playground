@@ -61,8 +61,8 @@ private:
     auto pixel_uv_center =
         pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
 
-    trace_tail = ray_3(main_camera.station_point,
-                       pixel_uv_center - main_camera.station_point);
+    trace_tail = ray_3(main_camera.principal_ray.origin(),
+                       pixel_uv_center - main_camera.principal_ray.origin());
   }
 
   color trace_accumulation;

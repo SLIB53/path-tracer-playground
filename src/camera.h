@@ -1,24 +1,45 @@
 #pragma once
 
-#include "point_3.h"
+#include "ray_3.h"
 
 class [[nodiscard]] camera {
 public:
-  point_3 station_point;
-  double focal_length = 0.0;
-  double viewport_height = 0.0;
-  double viewport_width = 0.0;
+  vector_3 up;
+  ray_3 principal_ray;
+  double vertical_field_of_view = 0.0;
+  double viewport_aspect_ratio = 0.0;
 
-  vector_3 viewport_u() const noexcept {
-    return vector_3(viewport_width, 0.0, 0.0);
+  inline vector_3 viewport_u() const noexcept {
+    return viewport_width() * orthonormal_basis_u();
   }
 
-  vector_3 viewport_v() const noexcept {
-    return vector_3(0.0, -viewport_height, 0.0);
+  inline vector_3 viewport_v() const noexcept {
+    return viewport_height() * -orthonormal_basis_v();
   }
 
-  point_3 viewport_origin() const noexcept {
-    return station_point - vector_3(0.0, 0.0, focal_length) -
-           viewport_u() / 2.0 - viewport_v() / 2.0;
+  inline point_3 viewport_origin() const noexcept {
+    return principal_ray.direction() - viewport_u() / 2.0 - viewport_v() / 2.0;
+  }
+
+private:
+  [[nodiscard]] inline double viewport_height() const noexcept {
+    return 2.0 * std::tan(vertical_field_of_view / 2.0) *
+           principal_ray.length();
+  }
+
+  [[nodiscard]] inline double viewport_width() const noexcept {
+    return viewport_height() * viewport_aspect_ratio;
+  }
+
+  inline vector_3 orthonormal_basis_w() const noexcept {
+    return norm(principal_ray.origin() - principal_ray.direction());
+  }
+
+  inline vector_3 orthonormal_basis_u() const noexcept {
+    return norm(cross(up, orthonormal_basis_w()));
+  }
+
+  inline vector_3 orthonormal_basis_v() const noexcept {
+    return norm(cross(orthonormal_basis_w(), orthonormal_basis_u()));
   }
 };
