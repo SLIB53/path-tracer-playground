@@ -1,7 +1,6 @@
 #pragma once
 
 #include <print>
-#include <random>
 
 #include "camera.h"
 #include "shape.h"

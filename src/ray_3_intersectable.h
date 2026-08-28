@@ -1,10 +1,7 @@
 #pragma once
 
-#include <ranges>
 #include <variant>
 
-#include "interval.h"
-#include "ray_3_intersection.h"
 #include "sphere.h"
 
 template <class T>

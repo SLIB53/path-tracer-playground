@@ -1,10 +1,6 @@
-#include <memory>
 #include <numbers>
-#include <vector>
 
-#include "material.h"
 #include "render.h"
-#include "shape.h"
 
 constexpr int image_width = 1280;
 constexpr int image_height = 720;
