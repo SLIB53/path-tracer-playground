@@ -1,7 +1,6 @@
 #pragma once
 
 #include <print>
-#include <random>
 
 #include "camera.h"
 #include "shape.h"
@@ -61,8 +60,15 @@ private:
     auto pixel_uv_center =
         pixel_00_center + (u * pixel_delta_u) + (v * pixel_delta_v);
 
-    trace_tail = ray_3(main_camera.station_point,
-                       pixel_uv_center - main_camera.station_point);
+    auto depth_of_field_disk_r = vector_3::random_on_unit_disk();
+    auto depth_of_field_disk_uv =
+        depth_of_field_disk_r[0] * main_camera.depth_of_field_disk_u() +
+        depth_of_field_disk_r[1] * main_camera.depth_of_field_disk_v();
+
+    point_3 trace_tail_origin =
+        main_camera.principal_ray.origin() + depth_of_field_disk_uv;
+    vector_3 trace_tail_direction = pixel_uv_center - trace_tail_origin;
+    trace_tail = ray_3(trace_tail_origin, trace_tail_direction);
   }
 
   color trace_accumulation;

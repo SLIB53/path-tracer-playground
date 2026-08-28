@@ -1,7 +1,6 @@
 #pragma once
 
 #include "point_3.h"
-#include "vector_3.h"
 
 class [[nodiscard]] ray_3 {
 public:
@@ -13,6 +12,10 @@ public:
   constexpr const point_3 &origin() const noexcept { return origin_; }
 
   constexpr const vector_3 &direction() const noexcept { return direction_; }
+
+  [[nodiscard]] inline double length() const noexcept {
+    return (origin_ - direction_).length();
+  }
 
   constexpr point_3 at(double t) const noexcept {
     return origin_ + t * direction_;

@@ -74,7 +74,7 @@ public:
            elements[2] * elements[2];
   }
 
-  [[nodiscard]] double length() const noexcept {
+  [[nodiscard]] inline double length() const noexcept {
     return std::sqrt(length_squared());
   }
 
@@ -102,6 +102,17 @@ public:
     auto candidate = vector_3::random_on_unit_sphere();
 
     return dot(candidate, normal) > 0.0 ? candidate : -candidate;
+  }
+
+  static vector_3 random_on_unit_disk() {
+    thread_local std::mt19937 generator{std::random_device{}()};
+    thread_local std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+
+    while (true)
+      if (auto candidate =
+              vector_3(distribution(generator), distribution(generator), 0.0);
+          candidate.length_squared() < 1.0)
+        return candidate;
   }
 };
 

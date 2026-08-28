@@ -1,6 +1,5 @@
 #pragma once
 
-#include "interval.h"
 #include "material.h"
 
 class [[nodiscard]] sphere {

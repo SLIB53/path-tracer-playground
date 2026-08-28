@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "point_3.h"
 #include "ray_3.h"
 
 class material;
