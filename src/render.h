@@ -47,7 +47,7 @@ private:
                                        const camera &main_camera,
                                        const shape_range auto &world, double u,
                                        double v) noexcept {
-  static constexpr unsigned int max_trace_depth = 16;
+  static constexpr unsigned int max_trace_depth = 64;
 
   ray_3 trace_tail;
   {
@@ -116,7 +116,7 @@ super_sampled_pixel_color(const pixmap_formatter &formatter,
                           const camera &main_camera,
                           const shape_range auto &world, unsigned int row,
                           unsigned int column) noexcept {
-  static constexpr unsigned int max_samples = 128;
+  static constexpr unsigned int max_samples = 512;
 
   vector_3 sample_color_sum;
   for (unsigned int sample = 0; sample < max_samples; ++sample) {
