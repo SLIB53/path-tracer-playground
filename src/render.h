@@ -47,7 +47,7 @@ private:
                                        const camera &main_camera,
                                        const shape_range auto &world, double u,
                                        double v) noexcept {
-  static constexpr unsigned int max_trace_depth = 128;
+  static constexpr unsigned int max_trace_depth = 64;
 
   ray_3 trace_tail;
   {

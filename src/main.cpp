@@ -21,66 +21,58 @@ int main() {
 
   std::vector<shape> world;
   {
+    thread_local std::mt19937 generator{std::random_device{}()};
+    thread_local std::uniform_real_distribution<double> zero_to_one(0.0, 1.0);
+    thread_local std::uniform_real_distribution<double> half_to_one(0.5, 1.0);
+
+    const auto spawn_orb_lambertian = [&world](const point_3 &center,
+                                               const color &albedo) -> void {
+      auto material = std::make_shared<lambertian>(albedo);
+      world.push_back(sphere(center, std::fabs(center.y()), material));
+    };
+
+    const auto spawn_orb_metal = [&world](const point_3 &center,
+                                          const color &albedo,
+                                          double fuzz) -> void {
+      auto material = std::make_shared<metal>(albedo, fuzz);
+      world.push_back(sphere(center, std::fabs(center.y()), material));
+    };
+
+    const auto spawn_orb_glass = [&world](const point_3 &center) -> void {
+      auto material = std::make_shared<dielectric>(1.5);
+      world.push_back(sphere(center, std::fabs(center.y()), material));
+    };
+
     // spawn ground
 
-    auto ground_material = std::make_shared<lambertian>(color(0.5, 0.5, 0.5));
-    world.push_back(
-        sphere(point_3(0.0, -1000.0, 0.0), 1000.0, ground_material));
+    spawn_orb_lambertian(point_3(0.0, -1000.0, 0.0), color(0.5, 0.5, 0.5));
 
     // spawn small orbs
 
     for (int a = -11; a < 11; ++a)
       for (int b = -11; b < 11; ++b) {
-        thread_local std::mt19937 generator{std::random_device{}()};
-        thread_local std::uniform_real_distribution<double> zero_to_one(0.0,
-                                                                        1.0);
-
-        static const auto spawn_orb_lambertian =
-            [&world](const point_3 &center) -> void {
-          auto albedo = pairwise_multiply(color::random(), color::random());
-          auto orb_material = std::make_shared<lambertian>(albedo);
-          world.push_back(sphere(center, center.y(), orb_material));
-        };
-
-        static const auto spawn_orb_metal =
-            [&world](const point_3 &center) -> void {
-          thread_local std::uniform_real_distribution<double> zero_to_half(0.0,
-                                                                           1.0);
-          auto albedo = color::random(0.5, 1);
-          auto fuzz = zero_to_half(generator);
-          auto orb_material = std::make_shared<metal>(albedo, fuzz);
-          world.push_back(sphere(center, center.y(), orb_material));
-        };
-
-        static const auto spawn_orb_glass =
-            [&world](const point_3 &center) -> void {
-          auto orb_material = std::make_shared<dielectric>(1.5);
-          world.push_back(sphere(center, center.y(), orb_material));
-        };
-
         point_3 center(a + 0.9 * zero_to_one(generator), 0.2,
                        b + 0.9 * zero_to_one(generator));
         if ((center - point_3(4, center.y(), 0)).length() <= 0.9)
           break;
 
-        if (auto raffle = zero_to_one(generator); raffle < 0.8)
-          spawn_orb_lambertian(center);
-        else if (raffle < 0.95)
-          spawn_orb_metal(center);
+        if (auto choice = zero_to_one(generator); choice < 0.8)
+          spawn_orb_lambertian(
+              center, pairwise_multiply(color::random(), color::random()));
+        else if (choice < 0.95)
+          spawn_orb_metal(center, color::random(0.5, 1),
+                          half_to_one(generator));
         else
           spawn_orb_glass(center);
       }
 
     // spawn big orbs
 
-    auto center_orb_material = std::make_shared<dielectric>(1.5);
-    world.push_back(sphere(point_3(0, 1, 0), 1.0, center_orb_material));
+    spawn_orb_lambertian(point_3(-4, 1, 0), color(0.4, 0.2, 0.1));
 
-    auto far_orb_material = std::make_shared<lambertian>(color(0.4, 0.2, 0.1));
-    world.push_back(sphere(point_3(-4, 1, 0), 1.0, far_orb_material));
+    spawn_orb_glass(point_3(0, 1, 0));
 
-    auto near_orb_material = std::make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.push_back(sphere(point_3(4, 1, 0), 1.0, near_orb_material));
+    spawn_orb_metal(point_3(4, 1, 0), color(0.7, 0.6, 0.5), 0.0);
   }
 
   render(formatter, main_camera, world);
