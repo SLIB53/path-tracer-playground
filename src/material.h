@@ -17,7 +17,7 @@ public:
 
 class [[nodiscard]] lambertian : public material {
 public:
-  lambertian(const color &albedo) noexcept : albedo_(albedo) {}
+  explicit lambertian(const color &albedo) noexcept : albedo_(albedo) {}
 
   bool scatter(const ray_3 &, const ray_3_intersection &intersection,
                color &out_attenuation,
@@ -64,7 +64,7 @@ private:
 
 class [[nodiscard]] dielectric : public material {
 public:
-  dielectric(double refraction_index) noexcept
+  explicit dielectric(double refraction_index) noexcept
       : refraction_index_(refraction_index) {}
 
   bool scatter(const ray_3 &incoming_ray,
