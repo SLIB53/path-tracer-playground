@@ -3,7 +3,7 @@
 #include "color.h"
 #include "ray_3_intersection.h"
 
-class material {
+class [[nodiscard]] material {
 public:
   virtual ~material() = default;
 
@@ -15,9 +15,9 @@ public:
   }
 };
 
-class lambertian : public material {
+class [[nodiscard]] lambertian : public material {
 public:
-  lambertian(const color &albedo) : albedo_(albedo) {}
+  lambertian(const color &albedo) noexcept : albedo_(albedo) {}
 
   bool scatter(const ray_3 &, const ray_3_intersection &intersection,
                color &out_attenuation,
@@ -37,9 +37,10 @@ private:
   color albedo_;
 };
 
-class metal : public material {
+class [[nodiscard]] metal : public material {
 public:
-  metal(const color &albedo, double fuzz) : albedo_(albedo), fuzz_(fuzz) {}
+  metal(const color &albedo, double fuzz) noexcept
+      : albedo_(albedo), fuzz_(fuzz) {}
 
   bool scatter(const ray_3 &incoming_ray,
                const ray_3_intersection &intersection, color &out_attenuation,
@@ -63,7 +64,8 @@ private:
 
 class dielectric : public material {
 public:
-  dielectric(double refraction_index) : refraction_index_(refraction_index) {}
+  dielectric(double refraction_index) noexcept
+      : refraction_index_(refraction_index) {}
 
   bool scatter(const ray_3 &incoming_ray,
                const ray_3_intersection &intersection, color &out_attenuation,

@@ -10,8 +10,8 @@ public:
                    std::shared_ptr<material> surface_material) noexcept
       : center_(center), radius_(radius), surface_material_(surface_material) {}
 
-  constexpr bool intersects(const ray_3 &ray, interval ray_t,
-                            ray_3_intersection &out) const noexcept {
+  inline bool intersects(const ray_3 &ray, interval ray_t,
+                         ray_3_intersection &out) const noexcept {
     auto ray_origin_toward_center = center_ - ray.origin();
 
     auto a = ray.direction().length_squared();

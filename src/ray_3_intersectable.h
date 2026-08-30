@@ -19,7 +19,7 @@ concept any_ray_3_intersectable_range =
 
 constexpr bool
 intersects(const any_ray_3_intersectable_range auto &intersectables,
-           const ray_3 &ray, interval ray_t, ray_3_intersection &out) {
+           const ray_3 &ray, interval ray_t, ray_3_intersection &out) noexcept {
   auto intersection = out;
   auto has_intersected = false;
   auto nearest_t = ray_t.max;

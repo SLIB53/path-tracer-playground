@@ -30,7 +30,7 @@ private:
 };
 
 // Given a trace ray, interpolate a gradient.
-[[nodiscard]] inline color background_color(const ray_3 &trace_ray) noexcept {
+inline color background_color(const ray_3 &trace_ray) noexcept {
   auto a = (norm(trace_ray.direction()).y() + 1.0) / 2.0;
 
   color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
@@ -43,10 +43,10 @@ private:
 
 // Given (u, v) coordinates of a viewport pixel, sample the world from the
 // coordinates.
-[[nodiscard]] inline color trace_color(const pixmap_formatter &formatter,
-                                       const camera &main_camera,
-                                       const shape_range auto &world, double u,
-                                       double v) noexcept {
+inline color trace_color(const pixmap_formatter &formatter,
+                         const camera &main_camera,
+                         const shape_range auto &world, double u,
+                         double v) noexcept {
   static constexpr unsigned int max_trace_depth = 64;
 
   ray_3 trace_tail;
@@ -95,15 +95,14 @@ private:
       assert(!approximately_equals(scattered_ray.direction(), vector_3()));
 
       trace_tail = scattered_ray;
-      trace_accumulation = pairwise_multiply(trace_accumulation, attenuation);
+      trace_accumulation = cwprod(trace_accumulation, attenuation);
     }
   }
 
   // Assume the final ray reaches the background (even though this may not
   // actually be the case), and multiply the background color. This will treat
   // the background color as the ambient light.
-  color result =
-      pairwise_multiply(trace_accumulation, background_color(trace_tail));
+  color result = cwprod(trace_accumulation, background_color(trace_tail));
   assert_color(result);
 
   return result;
@@ -111,11 +110,11 @@ private:
 
 // Given the row and column of a formatter pixel, average samples of the world
 // from the pixel.
-[[nodiscard]] inline color
-super_sampled_pixel_color(const pixmap_formatter &formatter,
-                          const camera &main_camera,
-                          const shape_range auto &world, unsigned int row,
-                          unsigned int column) noexcept {
+inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
+                                       const camera &main_camera,
+                                       const shape_range auto &world,
+                                       unsigned int row,
+                                       unsigned int column) noexcept {
   static constexpr unsigned int max_samples = 512;
 
   vector_3 sample_color_sum;
