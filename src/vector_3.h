@@ -187,9 +187,11 @@ inline vector_3 refract(const vector_3 &r, const vector_3 &n,
                         double eta_over_eta_prime) noexcept {
   auto cos_theta = std::fmin(dot(-r, n), 1.0);
 
-  vector_3 r_prime_perp = eta_over_eta_prime * (r + cos_theta * n),
-           r_prime_par =
-               -std::sqrt(std::fabs(1.0 - r_prime_perp.length_squared())) * n;
+  vector_3 r_prime_perpendicular = eta_over_eta_prime * (r + cos_theta * n),
+           r_prime_parallel =
+               -std::sqrt(
+                   std::fabs(1.0 - r_prime_perpendicular.length_squared())) *
+               n;
 
-  return r_prime_perp + r_prime_par;
+  return r_prime_perpendicular + r_prime_parallel;
 }

@@ -11,7 +11,7 @@ public:
       : center_(center), radius_(radius), surface_material_(surface_material) {}
 
   bool intersects(const ray_3 &ray, interval ray_t,
-                  ray_3_intersection &out) const noexcept {
+                  ray_3_intersection &out_intersection) const noexcept {
     auto ray_origin_toward_center = center_ - ray.origin();
 
     auto a = ray.direction().length_squared();
@@ -32,11 +32,12 @@ public:
           !ray_t.surrounds(root_nearest))
         return false;
 
-    out.t = root_nearest;
-    out.point = ray.at(out.t);
-    out.surface_material = surface_material_;
-    out.from_front =
-        intersects_from_front(ray, (out.point - center_) / radius_, out.normal);
+    out_intersection.t = root_nearest;
+    out_intersection.point = ray.at(out_intersection.t);
+    out_intersection.surface_material = surface_material_;
+    out_intersection.from_front =
+        intersects_from_front(ray, (out_intersection.point - center_) / radius_,
+                              out_intersection.normal);
 
     return true;
   }

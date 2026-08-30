@@ -138,8 +138,8 @@ inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
   return result;
 }
 
-void render(const pixmap_formatter &formatter, const camera &main_camera,
-            const shape_range auto &world) {
+inline void render(const pixmap_formatter &formatter, const camera &main_camera,
+                   const shape_range auto &world) {
   std::println("{}", formatter.format_header());
 
   for (unsigned int row = 0; row < formatter.image_height; ++row) {

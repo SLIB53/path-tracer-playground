@@ -98,13 +98,13 @@ public:
         auto r = (1 - refraction_index_of_intersection) /
                  (1 + refraction_index_of_intersection);
         r *= r;
-        auto shclick_reflectance =
+        auto schlick_reflectance =
             r + (1 - r) * std::pow((1 - cos_theta_from_intersection_normal), 5);
 
         thread_local std::mt19937 generator{std::random_device{}()};
         thread_local std::uniform_real_distribution<double> distribution(0.0,
                                                                          1.0);
-        bool schlick_reflection = shclick_reflectance > distribution(generator);
+        bool schlick_reflection = schlick_reflectance > distribution(generator);
 
         reflect_incoming_ray = total_internal_reflection || schlick_reflection;
       }
