@@ -74,7 +74,7 @@ public:
            elements[2] * elements[2];
   }
 
-  [[nodiscard]] inline double length() const noexcept {
+  [[nodiscard]] double length() const noexcept {
     return std::sqrt(length_squared());
   }
 
@@ -148,8 +148,8 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
   return (1 / t) * v;
 }
 
-[[nodiscard]] constexpr bool approximately_equals(const vector_3 &u,
-                                                  const vector_3 &v) noexcept {
+[[nodiscard]] inline bool approximately_equals(const vector_3 &u,
+                                               const vector_3 &v) noexcept {
   static constexpr auto tolerance = 1e-8;
 
   auto difference = u - v;
@@ -159,14 +159,12 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
          std::fabs(difference[2]) < tolerance;
 }
 
-[[nodiscard]] constexpr vector_3 pairwise_multiply(const vector_3 &u,
-                                                   const vector_3 &v) noexcept {
+constexpr vector_3 component_wise_product(const vector_3 &u,
+                                          const vector_3 &v) noexcept {
   return vector_3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
 }
 
-[[nodiscard]] inline vector_3 norm(const vector_3 &v) noexcept {
-  return v / v.length();
-}
+inline vector_3 normalize(const vector_3 &v) noexcept { return v / v.length(); }
 
 [[nodiscard]] constexpr double dot(const vector_3 &u,
                                    const vector_3 &v) noexcept {
@@ -174,26 +172,26 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
          u.elements[2] * v.elements[2];
 }
 
-[[nodiscard]] constexpr vector_3 cross(const vector_3 &u,
-                                       const vector_3 &v) noexcept {
+constexpr vector_3 cross(const vector_3 &u, const vector_3 &v) noexcept {
   return vector_3(u.elements[1] * v.elements[2] - u.elements[2] * v.elements[1],
                   u.elements[2] * v.elements[0] - u.elements[0] * v.elements[2],
                   u.elements[0] * v.elements[1] -
                       u.elements[1] * v.elements[0]);
 }
 
-[[nodiscard]] constexpr vector_3 reflect(const vector_3 &v,
-                                         const vector_3 &n) noexcept {
+constexpr vector_3 reflect(const vector_3 &v, const vector_3 &n) noexcept {
   return v - 2 * dot(v, n) * n;
 }
 
-[[nodiscard]] inline vector_3 refract(const vector_3 &r, const vector_3 &n,
-                                      double eta_over_eta_prime) noexcept {
+inline vector_3 refract(const vector_3 &r, const vector_3 &n,
+                        double eta_over_eta_prime) noexcept {
   auto cos_theta = std::fmin(dot(-r, n), 1.0);
 
-  vector_3 r_prime_perp = eta_over_eta_prime * (r + cos_theta * n),
-           r_prime_par =
-               -std::sqrt(std::fabs(1.0 - r_prime_perp.length_squared())) * n;
+  vector_3 r_prime_perpendicular = eta_over_eta_prime * (r + cos_theta * n),
+           r_prime_parallel =
+               -std::sqrt(
+                   std::fabs(1.0 - r_prime_perpendicular.length_squared())) *
+               n;
 
-  return r_prime_perp + r_prime_par;
+  return r_prime_perpendicular + r_prime_parallel;
 }

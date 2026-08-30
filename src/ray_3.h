@@ -9,12 +9,12 @@ public:
   constexpr ray_3(const point_3 &origin, const vector_3 &direction) noexcept
       : origin_(origin), direction_(direction) {}
 
-  constexpr const point_3 &origin() const noexcept { return origin_; }
+  [[nodiscard]] constexpr const point_3 &origin() const noexcept {
+    return origin_;
+  }
 
-  constexpr const vector_3 &direction() const noexcept { return direction_; }
-
-  [[nodiscard]] inline double length() const noexcept {
-    return (origin_ - direction_).length();
+  [[nodiscard]] constexpr const vector_3 &direction() const noexcept {
+    return direction_;
   }
 
   constexpr point_3 at(double t) const noexcept {

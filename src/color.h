@@ -5,23 +5,23 @@
 
 using color = vector_3;
 
-[[nodiscard]] constexpr double
-linear_to_gamma_color_channel(double ch) noexcept {
-  return ch > 0 ? std::sqrt(ch) : 0;
+[[nodiscard]] inline double
+linear_to_gamma_color_channel(double channel) noexcept {
+  return channel > 0 ? std::sqrt(channel) : 0;
 };
 
-[[nodiscard]] constexpr color linear_to_gamma_color(const color &c) noexcept {
-  return color(linear_to_gamma_color_channel(c.r()),
-               linear_to_gamma_color_channel(c.g()),
-               linear_to_gamma_color_channel(c.b()));
+inline color linear_to_gamma_color(const color &clr) noexcept {
+  return color(linear_to_gamma_color_channel(clr.r()),
+               linear_to_gamma_color_channel(clr.g()),
+               linear_to_gamma_color_channel(clr.b()));
 }
 
-inline void assert_color_channel([[maybe_unused]] double ch) noexcept {
-  assert(interval(0.0, 1.0).contains(ch));
+inline void assert_color_channel([[maybe_unused]] double channel) noexcept {
+  assert(interval(0.0, 1.0).contains(channel));
 }
 
-inline void assert_color([[maybe_unused]] color c) noexcept {
-  assert_color_channel(c.r());
-  assert_color_channel(c.g());
-  assert_color_channel(c.b());
+inline void assert_color([[maybe_unused]] const color &clr) noexcept {
+  assert_color_channel(clr.r());
+  assert_color_channel(clr.g());
+  assert_color_channel(clr.b());
 }

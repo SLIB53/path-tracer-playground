@@ -3,7 +3,7 @@
 #include "color.h"
 #include "ray_3_intersection.h"
 
-class material {
+class [[nodiscard]] material {
 public:
   virtual ~material() = default;
 
@@ -15,9 +15,9 @@ public:
   }
 };
 
-class lambertian : public material {
+class [[nodiscard]] lambertian : public material {
 public:
-  lambertian(const color &albedo) : albedo_(albedo) {}
+  explicit lambertian(const color &albedo) noexcept : albedo_(albedo) {}
 
   bool scatter(const ray_3 &, const ray_3_intersection &intersection,
                color &out_attenuation,
@@ -37,15 +37,16 @@ private:
   color albedo_;
 };
 
-class metal : public material {
+class [[nodiscard]] metal : public material {
 public:
-  metal(const color &albedo, double fuzz) : albedo_(albedo), fuzz_(fuzz) {}
+  metal(const color &albedo, double fuzz) noexcept
+      : albedo_(albedo), fuzz_(fuzz) {}
 
   bool scatter(const ray_3 &incoming_ray,
                const ray_3_intersection &intersection, color &out_attenuation,
                ray_3 &out_scattered_ray) const override {
     auto reflection =
-        norm(reflect(incoming_ray.direction(), intersection.normal));
+        normalize(reflect(incoming_ray.direction(), intersection.normal));
 
     auto scatter_direction =
         reflection + fuzz_ * vector_3::random_on_unit_hemisphere(reflection);
@@ -61,9 +62,10 @@ private:
   double fuzz_;
 };
 
-class dielectric : public material {
+class [[nodiscard]] dielectric : public material {
 public:
-  dielectric(double refraction_index) : refraction_index_(refraction_index) {}
+  explicit dielectric(double refraction_index) noexcept
+      : refraction_index_(refraction_index) {}
 
   bool scatter(const ray_3 &incoming_ray,
                const ray_3_intersection &intersection, color &out_attenuation,
@@ -76,7 +78,8 @@ public:
                                                   ? (1.0 / refraction_index_)
                                                   : refraction_index_;
 
-      auto incoming_ray_direction_normalized = norm(incoming_ray.direction());
+      auto incoming_ray_direction_normalized =
+          normalize(incoming_ray.direction());
 
       bool reflect_incoming_ray;
       {
@@ -95,13 +98,13 @@ public:
         auto r = (1 - refraction_index_of_intersection) /
                  (1 + refraction_index_of_intersection);
         r *= r;
-        auto shclick_reflectance =
+        auto schlick_reflectance =
             r + (1 - r) * std::pow((1 - cos_theta_from_intersection_normal), 5);
 
         thread_local std::mt19937 generator{std::random_device{}()};
         thread_local std::uniform_real_distribution<double> distribution(0.0,
                                                                          1.0);
-        bool schlick_reflection = shclick_reflectance > distribution(generator);
+        bool schlick_reflection = schlick_reflectance > distribution(generator);
 
         reflect_incoming_ray = total_internal_reflection || schlick_reflection;
       }

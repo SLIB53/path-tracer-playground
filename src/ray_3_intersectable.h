@@ -5,10 +5,11 @@
 #include "sphere.h"
 
 template <class T>
-concept ray_3_intersectable = requires(
-    const T &shape, const ray_3 &ray, interval ray_t, ray_3_intersection &out) {
-  { shape.intersects(ray, ray_t, out) } -> std::same_as<bool>;
-};
+concept ray_3_intersectable =
+    requires(const T &shape, const ray_3 &ray, interval ray_t,
+             ray_3_intersection &out_intersection) {
+      { shape.intersects(ray, ray_t, out_intersection) } -> std::same_as<bool>;
+    };
 
 using any_ray_3_intersectable = std::variant<sphere>;
 
@@ -19,24 +20,25 @@ concept any_ray_3_intersectable_range =
 
 constexpr bool
 intersects(const any_ray_3_intersectable_range auto &intersectables,
-           const ray_3 &ray, interval ray_t, ray_3_intersection &out) {
-  auto intersection = out;
+           const ray_3 &ray, interval ray_t,
+           ray_3_intersection &out_intersection) noexcept {
+  auto intersection = out_intersection;
   auto has_intersected = false;
   auto nearest_t = ray_t.max;
 
-  for (const auto &i : intersectables) {
+  for (const auto &intersectable : intersectables) {
     std::visit(
-        [&](const ray_3_intersectable auto &ic) {
-          if (ic.intersects(ray, interval(ray_t.min, nearest_t),
-                            intersection)) {
+        [&](const ray_3_intersectable auto &intersectable_visiting) {
+          if (intersectable_visiting.intersects(
+                  ray, interval(ray_t.min, nearest_t), intersection)) {
             has_intersected = true;
             nearest_t = intersection.t;
           }
         },
-        i);
+        intersectable);
   }
 
-  out = intersection;
+  out_intersection = intersection;
 
   return has_intersected;
 }

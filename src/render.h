@@ -16,8 +16,8 @@ public:
   }
 
   [[nodiscard]] std::string format_pixel(const color &pixel_color) const {
-    auto color_channel_to_level = [](double ch) noexcept -> int {
-      return int((double(max_color_level) + 0.999) * ch);
+    auto color_channel_to_level = [](double channel) noexcept -> int {
+      return int((double(max_color_level) + 0.999) * channel);
     };
 
     return std::format("{} {} {}", color_channel_to_level(pixel_color.r()),
@@ -30,8 +30,8 @@ private:
 };
 
 // Given a trace ray, interpolate a gradient.
-[[nodiscard]] inline color background_color(const ray_3 &trace_ray) noexcept {
-  auto a = (norm(trace_ray.direction()).y() + 1.0) / 2.0;
+inline color background_color(const ray_3 &trace_ray) {
+  auto a = (normalize(trace_ray.direction()).y() + 1.0) / 2.0;
 
   color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
 
@@ -43,10 +43,9 @@ private:
 
 // Given (u, v) coordinates of a viewport pixel, sample the world from the
 // coordinates.
-[[nodiscard]] inline color trace_color(const pixmap_formatter &formatter,
-                                       const camera &main_camera,
-                                       const shape_range auto &world, double u,
-                                       double v) noexcept {
+inline color trace_color(const pixmap_formatter &formatter,
+                         const camera &main_camera,
+                         const shape_range auto &world, double u, double v) {
   static constexpr unsigned int max_trace_depth = 64;
 
   ray_3 trace_tail;
@@ -66,7 +65,7 @@ private:
         depth_of_field_disk_r[1] * main_camera.depth_of_field_disk_v();
 
     point_3 trace_tail_origin =
-        main_camera.principal_ray.origin() + depth_of_field_disk_uv;
+        main_camera.axial_ray.origin() + depth_of_field_disk_uv;
     vector_3 trace_tail_direction = pixel_uv_center - trace_tail_origin;
     trace_tail = ray_3(trace_tail_origin, trace_tail_direction);
   }
@@ -77,8 +76,8 @@ private:
     // pairwise multiplication.
     trace_accumulation = color(1.0, 1.0, 1.0);
 
-    // We can use the iterative form without keeping a stack rather than
-    // accumulate recursively because the accumulation is commutative.
+    // Because the accumulation is commutative, we can use the iterative form
+    // without keeping a stack rather than accumulate recursively.
     for (unsigned int trace_depth = 0; trace_depth < max_trace_depth;
          ++trace_depth) {
       ray_3_intersection intersection;
@@ -95,7 +94,8 @@ private:
       assert(!approximately_equals(scattered_ray.direction(), vector_3()));
 
       trace_tail = scattered_ray;
-      trace_accumulation = pairwise_multiply(trace_accumulation, attenuation);
+      trace_accumulation =
+          component_wise_product(trace_accumulation, attenuation);
     }
   }
 
@@ -103,7 +103,7 @@ private:
   // actually be the case), and multiply the background color. This will treat
   // the background color as the ambient light.
   color result =
-      pairwise_multiply(trace_accumulation, background_color(trace_tail));
+      component_wise_product(trace_accumulation, background_color(trace_tail));
   assert_color(result);
 
   return result;
@@ -111,11 +111,10 @@ private:
 
 // Given the row and column of a formatter pixel, average samples of the world
 // from the pixel.
-[[nodiscard]] inline color
-super_sampled_pixel_color(const pixmap_formatter &formatter,
-                          const camera &main_camera,
-                          const shape_range auto &world, unsigned int row,
-                          unsigned int column) noexcept {
+inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
+                                       const camera &main_camera,
+                                       const shape_range auto &world,
+                                       unsigned int row, unsigned int column) {
   static constexpr unsigned int max_samples = 512;
 
   vector_3 sample_color_sum;
@@ -139,8 +138,8 @@ super_sampled_pixel_color(const pixmap_formatter &formatter,
   return result;
 }
 
-void render(const pixmap_formatter &formatter, const camera &main_camera,
-            const shape_range auto &world) {
+inline void render(const pixmap_formatter &formatter, const camera &main_camera,
+                   const shape_range auto &world) {
   std::println("{}", formatter.format_header());
 
   for (unsigned int row = 0; row < formatter.image_height; ++row) {
