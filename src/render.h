@@ -30,7 +30,7 @@ private:
 };
 
 // Given a trace ray, interpolate a gradient.
-inline color background_color(const ray_3 &trace_ray) noexcept {
+inline color background_color(const ray_3 &trace_ray) {
   auto a = (normalize(trace_ray.direction()).y() + 1.0) / 2.0;
 
   color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
@@ -45,8 +45,7 @@ inline color background_color(const ray_3 &trace_ray) noexcept {
 // coordinates.
 inline color trace_color(const pixmap_formatter &formatter,
                          const camera &main_camera,
-                         const shape_range auto &world, double u,
-                         double v) noexcept {
+                         const shape_range auto &world, double u, double v) {
   static constexpr unsigned int max_trace_depth = 64;
 
   ray_3 trace_tail;
@@ -115,8 +114,7 @@ inline color trace_color(const pixmap_formatter &formatter,
 inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
                                        const camera &main_camera,
                                        const shape_range auto &world,
-                                       unsigned int row,
-                                       unsigned int column) noexcept {
+                                       unsigned int row, unsigned int column) {
   static constexpr unsigned int max_samples = 512;
 
   vector_3 sample_color_sum;

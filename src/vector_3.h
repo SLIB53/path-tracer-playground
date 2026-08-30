@@ -74,7 +74,7 @@ public:
            elements[2] * elements[2];
   }
 
-  [[nodiscard]] inline double length() const noexcept {
+  [[nodiscard]] double length() const noexcept {
     return std::sqrt(length_squared());
   }
 
