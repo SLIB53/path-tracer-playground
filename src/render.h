@@ -16,8 +16,8 @@ public:
   }
 
   [[nodiscard]] std::string format_pixel(const color &pixel_color) const {
-    auto color_channel_to_level = [](double ch) noexcept -> int {
-      return int((double(max_color_level) + 0.999) * ch);
+    auto color_channel_to_level = [](double channel) noexcept -> int {
+      return int((double(max_color_level) + 0.999) * channel);
     };
 
     return std::format("{} {} {}", color_channel_to_level(pixel_color.r()),
@@ -76,8 +76,8 @@ inline color trace_color(const pixmap_formatter &formatter,
     // pairwise multiplication.
     trace_accumulation = color(1.0, 1.0, 1.0);
 
-    // We can use the iterative form without keeping a stack rather than
-    // accumulate recursively because the accumulation is commutative.
+    // Because the accumulation is commutative, we can use the iterative form
+    // without keeping a stack rather than accumulate recursively.
     for (unsigned int trace_depth = 0; trace_depth < max_trace_depth;
          ++trace_depth) {
       ray_3_intersection intersection;
