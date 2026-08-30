@@ -95,14 +95,16 @@ inline color trace_color(const pixmap_formatter &formatter,
       assert(!approximately_equals(scattered_ray.direction(), vector_3()));
 
       trace_tail = scattered_ray;
-      trace_accumulation = cwprod(trace_accumulation, attenuation);
+      trace_accumulation =
+          component_wise_product(trace_accumulation, attenuation);
     }
   }
 
   // Assume the final ray reaches the background (even though this may not
   // actually be the case), and multiply the background color. This will treat
   // the background color as the ambient light.
-  color result = cwprod(trace_accumulation, background_color(trace_tail));
+  color result =
+      component_wise_product(trace_accumulation, background_color(trace_tail));
   assert_color(result);
 
   return result;

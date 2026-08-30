@@ -57,8 +57,8 @@ int main() {
           break;
 
         if (auto choice = zero_to_one(generator); choice < 0.8)
-          spawn_orb_lambertian(center,
-                               cwprod(color::random(), color::random()));
+          spawn_orb_lambertian(
+              center, component_wise_product(color::random(), color::random()));
         else if (choice < 0.95)
           spawn_orb_metal(center, color::random(0.5, 1),
                           half_to_one(generator));

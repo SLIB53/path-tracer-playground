@@ -148,8 +148,8 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
   return (1 / t) * v;
 }
 
-[[nodiscard]] constexpr bool approximately_equals(const vector_3 &u,
-                                                  const vector_3 &v) noexcept {
+[[nodiscard]] inline bool approximately_equals(const vector_3 &u,
+                                               const vector_3 &v) noexcept {
   static constexpr auto tolerance = 1e-8;
 
   auto difference = u - v;
@@ -159,7 +159,8 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
          std::fabs(difference[2]) < tolerance;
 }
 
-constexpr vector_3 cwprod(const vector_3 &u, const vector_3 &v) noexcept {
+constexpr vector_3 component_wise_product(const vector_3 &u,
+                                          const vector_3 &v) noexcept {
   return vector_3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
 }
 
