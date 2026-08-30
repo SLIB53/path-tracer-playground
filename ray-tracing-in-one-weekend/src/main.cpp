@@ -2,8 +2,8 @@
 
 #include "render.h"
 
-constexpr int image_width = 1280 / 4;
-constexpr int image_height = 720 / 4;
+constexpr int image_width = 5120;
+constexpr int image_height = 2880;
 constexpr double image_aspect_ratio = double(image_width) / image_height;
 
 int main() {

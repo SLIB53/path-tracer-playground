@@ -3,7 +3,6 @@
 #include <array>
 #include <cassert>
 #include <cmath>
-#include <format>
 #include <random>
 
 class vector_3;
@@ -113,16 +112,6 @@ public:
               vector_3(distribution(generator), distribution(generator), 0.0);
           candidate.length_squared() < 1.0)
         return candidate;
-  }
-};
-
-template <> struct std::formatter<vector_3> : std::formatter<double> {
-  auto format(const vector_3 &v, std::format_context &ctx) const {
-    auto out = std::formatter<double>::format(v.elements[0], ctx);
-    *out++ = ' ';
-    out = std::formatter<double>::format(v.elements[1], ctx);
-    *out++ = ' ';
-    return std::formatter<double>::format(v.elements[2], ctx);
   }
 };
 
