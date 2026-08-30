@@ -164,7 +164,7 @@ constexpr vector_3 component_wise_product(const vector_3 &u,
   return vector_3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
 }
 
-inline vector_3 norm(const vector_3 &v) noexcept { return v / v.length(); }
+inline vector_3 normalize(const vector_3 &v) noexcept { return v / v.length(); }
 
 [[nodiscard]] constexpr double dot(const vector_3 &u,
                                    const vector_3 &v) noexcept {

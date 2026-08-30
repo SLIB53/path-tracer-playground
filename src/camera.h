@@ -43,15 +43,15 @@ private:
   }
 
   inline vector_3 orthonormal_basis_u() const noexcept {
-    return norm(cross(up, orthonormal_basis_w()));
+    return normalize(cross(up, orthonormal_basis_w()));
   }
 
   inline vector_3 orthonormal_basis_v() const noexcept {
-    return norm(cross(orthonormal_basis_w(), orthonormal_basis_u()));
+    return normalize(cross(orthonormal_basis_w(), orthonormal_basis_u()));
   }
 
   inline vector_3 orthonormal_basis_w() const noexcept {
-    return norm(axial_ray.origin() - axial_ray.direction());
+    return normalize(axial_ray.origin() - axial_ray.direction());
   }
 
   [[nodiscard]] inline double depth_of_field_disk_radius() const noexcept {

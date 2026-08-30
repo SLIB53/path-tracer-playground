@@ -31,7 +31,7 @@ private:
 
 // Given a trace ray, interpolate a gradient.
 inline color background_color(const ray_3 &trace_ray) noexcept {
-  auto a = (norm(trace_ray.direction()).y() + 1.0) / 2.0;
+  auto a = (normalize(trace_ray.direction()).y() + 1.0) / 2.0;
 
   color c1(1.0, 1.0, 1.0), c2(0.5, 0.7, 1.0);
 

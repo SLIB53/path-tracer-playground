@@ -46,7 +46,7 @@ public:
                const ray_3_intersection &intersection, color &out_attenuation,
                ray_3 &out_scattered_ray) const override {
     auto reflection =
-        norm(reflect(incoming_ray.direction(), intersection.normal));
+        normalize(reflect(incoming_ray.direction(), intersection.normal));
 
     auto scatter_direction =
         reflection + fuzz_ * vector_3::random_on_unit_hemisphere(reflection);
@@ -62,7 +62,7 @@ private:
   double fuzz_;
 };
 
-class dielectric : public material {
+class [[nodiscard]] dielectric : public material {
 public:
   dielectric(double refraction_index) noexcept
       : refraction_index_(refraction_index) {}
@@ -78,7 +78,8 @@ public:
                                                   ? (1.0 / refraction_index_)
                                                   : refraction_index_;
 
-      auto incoming_ray_direction_normalized = norm(incoming_ray.direction());
+      auto incoming_ray_direction_normalized =
+          normalize(incoming_ray.direction());
 
       bool reflect_incoming_ray;
       {
