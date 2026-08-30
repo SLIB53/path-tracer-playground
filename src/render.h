@@ -66,7 +66,7 @@ inline color trace_color(const pixmap_formatter &formatter,
         depth_of_field_disk_r[1] * main_camera.depth_of_field_disk_v();
 
     point_3 trace_tail_origin =
-        main_camera.principal_ray.origin() + depth_of_field_disk_uv;
+        main_camera.axial_ray.origin() + depth_of_field_disk_uv;
     vector_3 trace_tail_direction = pixel_uv_center - trace_tail_origin;
     trace_tail = ray_3(trace_tail_origin, trace_tail_direction);
   }

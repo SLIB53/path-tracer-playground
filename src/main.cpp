@@ -2,8 +2,8 @@
 
 #include "render.h"
 
-constexpr int image_width = 1280;
-constexpr int image_height = 720;
+constexpr int image_width = 1280 / 4;
+constexpr int image_height = 720 / 4;
 constexpr double image_aspect_ratio = double(image_width) / image_height;
 
 int main() {
@@ -13,7 +13,7 @@ int main() {
 
   camera main_camera;
   main_camera.up = vector_3(0.0, 1.0, 0.0);
-  main_camera.principal_ray = ray_3(point_3(13.0, 2.0, 3.0), vector_3());
+  main_camera.axial_ray = ray_3(point_3(13.0, 2.0, 3.0), vector_3());
   main_camera.field_of_view_vertical_angle = std::numbers::pi / 9.0;
   main_camera.depth_of_field_angle = std::numbers::pi / 300.0;
   main_camera.viewport_distance = 10.0;

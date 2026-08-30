@@ -5,7 +5,7 @@
 class [[nodiscard]] camera {
 public:
   vector_3 up;
-  ray_3 principal_ray;
+  ray_3 axial_ray;
   double field_of_view_vertical_angle = 0.0;
   double depth_of_field_angle = 0.0;
   double viewport_distance = 0.0;
@@ -20,7 +20,7 @@ public:
   }
 
   inline point_3 viewport_origin() const noexcept {
-    return principal_ray.origin() - viewport_distance * orthonormal_basis_w() -
+    return axial_ray.origin() - viewport_distance * orthonormal_basis_w() -
            viewport_u() / 2.0 - viewport_v() / 2.0;
   }
 
@@ -51,7 +51,7 @@ private:
   }
 
   inline vector_3 orthonormal_basis_w() const noexcept {
-    return norm(principal_ray.origin() - principal_ray.direction());
+    return norm(axial_ray.origin() - axial_ray.direction());
   }
 
   [[nodiscard]] inline double depth_of_field_disk_radius() const noexcept {
