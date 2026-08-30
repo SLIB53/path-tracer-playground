@@ -1,4 +1,4 @@
-# Path Tracer Playground
+# Rendering Engines
 
 ## Ray Tracing in One Weekend
 
