@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <numbers>
 
 #include "render.h"
@@ -15,7 +16,7 @@ int main() {
   main_camera.up = vector_3(0.0, 1.0, 0.0);
   main_camera.axial_ray = ray_3(point_3(13.0, 2.0, 3.0), vector_3());
   main_camera.field_of_view_vertical_angle = std::numbers::pi / 9.0;
-  main_camera.depth_of_field_angle = std::numbers::pi / 300.0;
+  main_camera.depth_of_field_angle = std::numbers::pi / 180.0;
   main_camera.viewport_distance = 10.0;
   main_camera.viewport_aspect_ratio = image_aspect_ratio;
 
@@ -38,41 +39,59 @@ int main() {
       world.push_back(sphere(center, std::fabs(center.y()), material));
     };
 
-    const auto spawn_orb_glass = [&world](const point_3 &center) -> void {
-      auto material = std::make_shared<dielectric>(1.5);
-      world.push_back(sphere(center, std::fabs(center.y()), material));
+    const auto spawn_orb_dielectric =
+        [&world](const point_3 &center, double refraction_index) -> void {
+      auto material_outer = std::make_shared<dielectric>(refraction_index),
+           material_inner =
+               std::make_shared<dielectric>(1.0 / refraction_index);
+      world.push_back(sphere(center, std::fabs(center.y()), material_outer));
+      world.push_back(
+          sphere(center, 0.854 * std::fabs(center.y()), material_inner));
     };
-
-    // spawn ground
-
-    spawn_orb_lambertian(point_3(0.0, -1000.0, 0.0), color(0.5, 0.5, 0.5));
-
-    // spawn small orbs
-
-    for (int a = -11; a < 11; ++a)
-      for (int b = -11; b < 11; ++b) {
-        point_3 center(a + 0.9 * zero_to_one(generator), 0.2,
-                       b + 0.9 * zero_to_one(generator));
-        if ((center - point_3(4, center.y(), 0)).length() <= 0.9)
-          break;
-
-        if (auto choice = zero_to_one(generator); choice < 0.8)
-          spawn_orb_lambertian(
-              center, component_wise_product(color::random(), color::random()));
-        else if (choice < 0.95)
-          spawn_orb_metal(center, color::random(0.5, 1),
-                          half_to_one(generator));
-        else
-          spawn_orb_glass(center);
-      }
 
     // spawn big orbs
 
-    spawn_orb_lambertian(point_3(-4, 1, 0), color(0.4, 0.2, 0.1));
+    spawn_orb_lambertian(point_3(-4, 1, 0), palette::at(15));
 
-    spawn_orb_glass(point_3(0, 1, 0));
+    spawn_orb_dielectric(point_3(4, 1, 0), 1.309); // ice
 
-    spawn_orb_metal(point_3(4, 1, 0), color(0.7, 0.6, 0.5), 0.0);
+    spawn_orb_metal(point_3(0, 1, 0), palette::at(1), 0.0);
+
+    // spawn small orbs
+
+    const auto orb_overlaps_existing =
+        [&world](const point_3 &candidate_center,
+                 double candidate_radius) -> bool {
+      return std::ranges::any_of(world, [&](const auto &existing) -> bool {
+        const sphere *existing_sphere = std::get_if<sphere>(&existing);
+        // WARN: skipping null check, we will only have spheres
+
+        return (candidate_center - existing_sphere->center()).length() <
+               (candidate_radius + existing_sphere->radius());
+      });
+    };
+
+    for (int a = -11; a < 11; ++a)
+      for (int b = -11; b < 11; ++b) {
+        auto candidate_radius = half_to_one(generator) * 0.3;
+        point_3 candidate_center(a + 0.9 * zero_to_one(generator),
+                                 candidate_radius,
+                                 b + 0.9 * zero_to_one(generator));
+        if (orb_overlaps_existing(candidate_center, candidate_radius))
+          continue;
+
+        if (auto choice = zero_to_one(generator); choice < 0.618)
+          spawn_orb_lambertian(candidate_center, palette::random_standard());
+        else if (choice < 0.944)
+          spawn_orb_metal(candidate_center, palette::random_bright(),
+                          zero_to_one(generator));
+        else
+          spawn_orb_dielectric(candidate_center, 2.417); // diamond
+      }
+
+    // spawn ground
+
+    spawn_orb_lambertian(point_3(0.0, -1000.0, 0.0), palette::at(0));
   }
 
   render(formatter, main_camera, world);
