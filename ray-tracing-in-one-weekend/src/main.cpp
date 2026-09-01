@@ -3,14 +3,10 @@
 
 #include "render.h"
 
-constexpr int image_width = 5120;
-constexpr int image_height = 2880;
-constexpr double image_aspect_ratio = double(image_width) / image_height;
-
 int main() {
   pixmap_formatter formatter;
-  formatter.image_width = image_width;
-  formatter.image_height = image_height;
+  formatter.image_width = 5120;
+  formatter.image_height = 2880;
 
   camera main_camera;
   main_camera.up = vector_3(0.0, 1.0, 0.0);
@@ -18,13 +14,14 @@ int main() {
   main_camera.field_of_view_vertical_angle = std::numbers::pi / 9.0;
   main_camera.depth_of_field_angle = std::numbers::pi / 180.0;
   main_camera.viewport_distance = 10.0;
-  main_camera.viewport_aspect_ratio = image_aspect_ratio;
+  main_camera.viewport_aspect_ratio =
+      double(formatter.image_width) / formatter.image_height;
 
   std::vector<shape> world;
   {
-    thread_local std::mt19937 generator{std::random_device{}()};
-    thread_local std::uniform_real_distribution<double> zero_to_one(0.0, 1.0);
-    thread_local std::uniform_real_distribution<double> half_to_one(0.5, 1.0);
+    std::mt19937 generator{std::random_device{}()};
+    std::uniform_real_distribution<double> zero_to_one(0.0, 1.0);
+    std::uniform_real_distribution<double> half_to_one(0.5, 1.0);
 
     const auto spawn_orb_lambertian = [&world](const point_3 &center,
                                                const color &albedo) -> void {
@@ -52,9 +49,7 @@ int main() {
     // spawn big orbs
 
     spawn_orb_lambertian(point_3(-4, 1, 0), palette::at(15));
-
     spawn_orb_dielectric(point_3(4, 1, 0), 1.309); // ice
-
     spawn_orb_metal(point_3(0, 1, 0), palette::at(1), 0.0);
 
     // spawn small orbs
@@ -64,7 +59,9 @@ int main() {
                  double candidate_radius) -> bool {
       return std::ranges::any_of(world, [&](const auto &existing) -> bool {
         const sphere *existing_sphere = std::get_if<sphere>(&existing);
-        // WARN: skipping null check, we will only have spheres
+
+        // WARNING: Skipping null check on existing_sphere. This assumes we will
+        // only have spheres.
 
         return (candidate_center - existing_sphere->center()).length() <
                (candidate_radius + existing_sphere->radius());
