@@ -51,9 +51,9 @@ int main() {
 
     // spawn big orbs
 
-    spawn_orb_lambertian(point_3(-4.0, 1.0, 0.0), palette::at(15));
+    spawn_orb_lambertian(point_3(-4.0, 1.0, 0.0), base16_palette[15]);
     spawn_orb_dielectric(point_3(4.0, 1.0, 0.0), 2.417); // diamond
-    spawn_orb_metal(point_3(0.0, 1.0, 0.0), palette::at(1), 0.0);
+    spawn_orb_metal(point_3(0.0, 1.0, 0.0), base16_palette[1], 0.0);
 
     // spawn small orbs
 
@@ -81,9 +81,9 @@ int main() {
           continue;
 
         if (auto choice = zero_to_one(generator); choice < 0.618)
-          spawn_orb_lambertian(candidate_center, palette::random_standard());
+          spawn_orb_lambertian(candidate_center, random_base16_normal_color());
         else if (choice < 0.944)
-          spawn_orb_metal(candidate_center, palette::random_bright(),
+          spawn_orb_metal(candidate_center, random_base16_bright_color(),
                           zero_to_one(generator));
         else
           spawn_orb_dielectric(candidate_center, 2.417); // diamond
@@ -91,7 +91,7 @@ int main() {
 
     // spawn ground
 
-    spawn_orb_lambertian(point_3(0.0, -1000.0, 0.0), palette::at(0));
+    spawn_orb_lambertian(point_3(0.0, -1000.0, 0.0), base16_palette[0]);
   }
 
   std::vector<color> imagebuffer;

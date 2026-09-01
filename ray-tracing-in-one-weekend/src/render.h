@@ -4,14 +4,14 @@
 #include <thread>
 
 #include "camera.h"
-#include "palette.h"
+#include "color.h"
 #include "shape.h"
 
 // Given a trace ray, interpolate a gradient.
 inline color background_color(const ray_3 &trace_ray) {
   auto a = (normalize(trace_ray.direction()).y() + 1.0) / 2.0;
 
-  color result = (1.0 - a) * color(1.0, 1.0, 1.0) + a * palette::at(8);
+  color result = (1.0 - a) * color(1.0, 1.0, 1.0) + a * base16_palette[8];
   assert_color(result);
 
   return result;
