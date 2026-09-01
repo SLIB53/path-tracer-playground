@@ -18,8 +18,9 @@ public:
 
   constexpr vector_3() noexcept : elements{0.0, 0.0, 0.0} {}
 
-  constexpr vector_3(double element1, double element2, double element3) noexcept
-      : elements{element1, element2, element3} {}
+  constexpr vector_3(double element_1, double element_2,
+                     double element_3) noexcept
+      : elements{element_1, element_2, element_3} {}
 
   [[nodiscard]] constexpr double x() const noexcept { return elements[0]; }
   [[nodiscard]] constexpr double y() const noexcept { return elements[1]; }
@@ -78,12 +79,12 @@ public:
     return std::sqrt(length_squared());
   }
 
-  static vector_3 random(double component_min, double component_max) {
-    const interval component_min_to_component_max(component_min, component_max);
+  static vector_3 random(double element_min, double element_max) {
+    const interval element_min_to_element_max(element_min, element_max);
 
-    return vector_3(random_in_interval(component_min_to_component_max),
-                    random_in_interval(component_min_to_component_max),
-                    random_in_interval(component_min_to_component_max));
+    return vector_3(random_in_interval(element_min_to_element_max),
+                    random_in_interval(element_min_to_element_max),
+                    random_in_interval(element_min_to_element_max));
   }
 
   static vector_3 random_on_unit_sphere() {
@@ -147,8 +148,8 @@ constexpr vector_3 operator/(const vector_3 &v, double t) noexcept {
          std::fabs(difference[2]) < tolerance;
 }
 
-constexpr vector_3 component_wise_product(const vector_3 &u,
-                                          const vector_3 &v) noexcept {
+constexpr vector_3 element_wise_product(const vector_3 &u,
+                                        const vector_3 &v) noexcept {
   return vector_3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
 }
 

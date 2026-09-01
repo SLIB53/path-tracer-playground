@@ -72,7 +72,7 @@ inline color trace_color(unsigned image_width, unsigned image_height,
 
       trace_tail = scattered_ray;
       trace_accumulation =
-          component_wise_product(trace_accumulation, attenuation);
+          element_wise_product(trace_accumulation, attenuation);
     }
   }
 
@@ -80,7 +80,7 @@ inline color trace_color(unsigned image_width, unsigned image_height,
   // actually be the case), and multiply the background color. This will treat
   // the background color as the ambient light.
   color result =
-      component_wise_product(trace_accumulation, background_color(trace_tail));
+      element_wise_product(trace_accumulation, background_color(trace_tail));
   assert_color(result);
 
   return result;
