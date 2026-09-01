@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <numbers>
 
+#include "pixmap_formatter.h"
 #include "render.h"
 
 int main() {
@@ -91,7 +92,11 @@ int main() {
     spawn_orb_lambertian(point_3(0.0, -1000.0, 0.0), palette::at(0));
   }
 
-  render(formatter, main_camera, world);
+  std::vector<color> imagebuffer;
+  render(formatter.image_width, formatter.image_height, main_camera, world,
+         imagebuffer);
+
+  formatter.print(imagebuffer);
 
   return 0;
 }

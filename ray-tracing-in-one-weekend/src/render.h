@@ -4,7 +4,6 @@
 
 #include "camera.h"
 #include "palette.h"
-#include "pixmap_formatter.h"
 #include "shape.h"
 
 // Given a trace ray, interpolate a gradient.
@@ -17,17 +16,17 @@ inline color background_color(const ray_3 &trace_ray) {
   return result;
 }
 
-// Given (u, v) coordinates of a viewport pixel, sample the world from the
+// Given (u, v) coordinates of a viewport, sample the world from the
 // coordinates.
-inline color trace_color(const pixmap_formatter &formatter,
+inline color trace_color(unsigned image_width, unsigned image_height,
                          const camera &main_camera,
                          const shape_range auto &world, double u, double v) {
   static constexpr unsigned max_trace_depth = 64;
 
   ray_3 trace_tail;
   {
-    auto pixel_delta_u = main_camera.viewport_u() / formatter.image_width,
-         pixel_delta_v = main_camera.viewport_v() / formatter.image_height;
+    auto pixel_delta_u = main_camera.viewport_u() / image_width,
+         pixel_delta_v = main_camera.viewport_v() / image_height;
 
     auto pixel_00_center =
         main_camera.viewport_origin() + (pixel_delta_u + pixel_delta_v) / 2.0;
@@ -85,9 +84,10 @@ inline color trace_color(const pixmap_formatter &formatter,
   return result;
 }
 
-// Given the row and column of a formatter pixel, average samples of the world
-// from the pixel.
-inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
+// Given the row and column of the image, average samples of the world from the
+// image's pixel at the row and column.
+inline color super_sampled_pixel_color(unsigned image_width,
+                                       unsigned image_height,
                                        const camera &main_camera,
                                        const shape_range auto &world,
                                        unsigned row, unsigned column) {
@@ -104,8 +104,8 @@ inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
       v_jittered = row + distribution(generator) - 0.5;
     }
 
-    sample_color_sum +=
-        trace_color(formatter, main_camera, world, u_jittered, v_jittered);
+    sample_color_sum += trace_color(image_width, image_height, main_camera,
+                                    world, u_jittered, v_jittered);
   }
 
   color result = sample_color_sum / max_samples;
@@ -114,17 +114,17 @@ inline color super_sampled_pixel_color(const pixmap_formatter &formatter,
   return result;
 }
 
-inline void render(const pixmap_formatter &formatter, const camera &main_camera,
-                   const shape_range auto &world) {
-  std::println("{}", formatter.format_header());
+inline void render(unsigned image_width, unsigned image_height,
+                   const camera &main_camera, const shape_range auto &world,
+                   std::vector<color> &out_imagebuffer) {
+  for (unsigned row = 0; row < image_height; ++row) {
+    std::print(stderr, "\r\x1b[K[Rendering] Rows of pixels remaining: {}/{}",
+               image_height - row, image_height);
 
-  for (unsigned row = 0; row < formatter.image_height; ++row) {
-    std::print(stderr, "\r\x1b[KRows of pixels remaining: {}/{}",
-               formatter.image_height - row, formatter.image_height);
-
-    for (unsigned column = 0; column < formatter.image_width; ++column)
-      std::println("{}", formatter.format_pixel(
-                             linear_to_gamma_color(super_sampled_pixel_color(
-                                 formatter, main_camera, world, row, column))));
+    for (unsigned column = 0; column < image_width; ++column)
+      out_imagebuffer.push_back(linear_to_gamma_color(super_sampled_pixel_color(
+          image_width, image_height, main_camera, world, row, column)));
   }
+
+  std::println(stderr, "\n[Rendering] Complete.");
 }
