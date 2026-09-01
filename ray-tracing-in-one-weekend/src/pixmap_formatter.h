@@ -12,8 +12,15 @@ public:
   void print(const std::vector<color> &imagebuffer) const {
     std::println("{}", format_header());
 
-    for (const auto &c : imagebuffer)
-      std::println("{}", format_pixel(c));
+    for (std::size_t i = 0; i < imagebuffer.size(); ++i) {
+      std::print(stderr, "\r\x1b[K{:.0f}% ({}/{} pixels)",
+                 double(i + 1) / imagebuffer.size() * 100.0, i + 1,
+                 imagebuffer.size());
+      std::println("{}", format_pixel(imagebuffer[i]));
+    }
+
+    std::println(stderr, "\r\x1b[K{:.0f}% ({}/{} pixels)", 100.0,
+                 imagebuffer.size(), imagebuffer.size());
   }
 
 private:

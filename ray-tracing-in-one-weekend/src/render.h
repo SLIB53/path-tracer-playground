@@ -1,6 +1,7 @@
 #pragma once
 
 #include <print>
+#include <thread>
 
 #include "camera.h"
 #include "palette.h"
@@ -21,7 +22,7 @@ inline color background_color(const ray_3 &trace_ray) {
 inline color trace_color(unsigned image_width, unsigned image_height,
                          const camera &main_camera,
                          const shape_range auto &world, double u, double v) {
-  static constexpr unsigned max_trace_depth = 64;
+  static constexpr unsigned trace_depth_maximum = 64;
 
   ray_3 trace_tail;
   {
@@ -53,7 +54,7 @@ inline color trace_color(unsigned image_width, unsigned image_height,
 
     // Because the accumulation is commutative, we can use the iterative form
     // without keeping a stack rather than accumulate recursively.
-    for (unsigned trace_depth = 0; trace_depth < max_trace_depth;
+    for (unsigned trace_depth = 0; trace_depth < trace_depth_maximum;
          ++trace_depth) {
       ray_3_intersection intersection;
       if (!intersects(world, trace_tail, interval(0.001, +infinity),
@@ -91,10 +92,10 @@ inline color super_sampled_pixel_color(unsigned image_width,
                                        const camera &main_camera,
                                        const shape_range auto &world,
                                        unsigned row, unsigned column) {
-  static constexpr unsigned max_samples = 512;
+  static constexpr unsigned samples_count = 512;
 
   vector_3 sample_color_sum;
-  for (unsigned sample = 0; sample < max_samples; ++sample) {
+  for (unsigned sample = 0; sample < samples_count; ++sample) {
     double u_jittered, v_jittered;
     {
       thread_local std::mt19937 generator{std::random_device{}()};
@@ -108,7 +109,7 @@ inline color super_sampled_pixel_color(unsigned image_width,
                                     world, u_jittered, v_jittered);
   }
 
-  color result = sample_color_sum / max_samples;
+  color result = sample_color_sum / samples_count;
   assert_color(result);
 
   return result;
@@ -117,14 +118,67 @@ inline color super_sampled_pixel_color(unsigned image_width,
 inline void render(unsigned image_width, unsigned image_height,
                    const camera &main_camera, const shape_range auto &world,
                    std::vector<color> &out_imagebuffer) {
-  for (unsigned row = 0; row < image_height; ++row) {
-    std::print(stderr, "\r\x1b[K[Rendering] Rows of pixels remaining: {}/{}",
-               image_height - row, image_height);
+  constexpr unsigned tile_width = 32, tile_height = 32;
 
-    for (unsigned column = 0; column < image_width; ++column)
-      out_imagebuffer.push_back(linear_to_gamma_color(super_sampled_pixel_color(
-          image_width, image_height, main_camera, world, row, column)));
+  const unsigned tile_row_count =
+      (image_height + tile_height - 1) / tile_height;
+  const unsigned tile_column_count =
+      (image_width + tile_width - 1) / tile_width;
+
+  const unsigned tile_total_count = tile_row_count * tile_column_count;
+
+  std::atomic<unsigned> tiles_queue{0};
+  std::atomic<unsigned> tiles_completed{0};
+
+  const auto process_tile_renderer = [&] {
+    while (true) {
+      const auto t = tiles_queue.fetch_add(1, std::memory_order_relaxed);
+      if (t >= tile_total_count)
+        break;
+
+      const std::size_t t_row_start = (t / tile_column_count) * tile_height;
+      const std::size_t t_column_start = (t % tile_column_count) * tile_width;
+      const std::size_t t_row_end = std::min(
+          t_row_start + tile_height, static_cast<std::size_t>(image_height));
+      const std::size_t t_column_end = std::min(
+          t_column_start + tile_width, static_cast<std::size_t>(image_width));
+
+      for (auto row = t_row_start; row < t_row_end; ++row)
+        for (auto column = t_column_start; column < t_column_end; ++column)
+          out_imagebuffer[row * image_width + column] =
+              linear_to_gamma_color(super_sampled_pixel_color(
+                  image_width, image_height, main_camera, world, row, column));
+
+      tiles_completed.fetch_add(1, std::memory_order_relaxed);
+    }
+  };
+
+  const auto process_progress_reporter =
+      [&tiles_completed, &tile_total_count](std::stop_token stop) {
+        while (!stop.stop_requested()) {
+          auto completed = tiles_completed.load(std::memory_order_relaxed);
+          std::print(stderr, "\r\x1b[K{:.0f}% ({}/{} tiles)",
+                     double(completed) / tile_total_count * 100.0, completed,
+                     tile_total_count);
+
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+      };
+
+  out_imagebuffer.resize(image_width * image_height);
+
+  std::jthread progress_reporter{process_progress_reporter};
+
+  {
+    const auto tile_renderers_count =
+        std::max(static_cast<unsigned>(1), std::thread::hardware_concurrency());
+
+    std::vector<std::jthread> tile_renderers;
+    tile_renderers.reserve(tile_renderers_count);
+
+    for (unsigned i = 0; i < tile_renderers_count; ++i)
+      tile_renderers.emplace_back(process_tile_renderer);
   }
 
-  std::println(stderr, "\n[Rendering] Complete.");
+  std::println(stderr, "\r\x1b[K{:.0f}% ({}/{} tiles)", 100.0, tile_total_count, tile_total_count);
 }

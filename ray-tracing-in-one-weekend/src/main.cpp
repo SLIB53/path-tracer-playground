@@ -5,9 +5,12 @@
 #include "render.h"
 
 int main() {
+  constexpr unsigned image_width = 5120;
+  constexpr unsigned image_height = 2880;
+
   pixmap_formatter formatter;
-  formatter.image_width = 5120;
-  formatter.image_height = 2880;
+  formatter.image_width = image_width;
+  formatter.image_height = image_height;
 
   camera main_camera;
   main_camera.up = vector_3(0.0, 1.0, 0.0);
@@ -15,8 +18,7 @@ int main() {
   main_camera.field_of_view_vertical_angle = std::numbers::pi / 9.0;
   main_camera.depth_of_field_angle = std::numbers::pi / 180.0;
   main_camera.viewport_distance = 10.0;
-  main_camera.viewport_aspect_ratio =
-      double(formatter.image_width) / formatter.image_height;
+  main_camera.viewport_aspect_ratio = double(image_width) / image_height;
 
   std::vector<shape> world;
   {
@@ -49,9 +51,9 @@ int main() {
 
     // spawn big orbs
 
-    spawn_orb_lambertian(point_3(-4, 1, 0), palette::at(15));
-    spawn_orb_dielectric(point_3(4, 1, 0), 1.309); // ice
-    spawn_orb_metal(point_3(0, 1, 0), palette::at(1), 0.0);
+    spawn_orb_lambertian(point_3(-4.0, 1.0, 0.0), palette::at(15));
+    spawn_orb_dielectric(point_3(4.0, 1.0, 0.0), 2.417); // diamond
+    spawn_orb_metal(point_3(0.0, 1.0, 0.0), palette::at(1), 0.0);
 
     // spawn small orbs
 
@@ -69,12 +71,12 @@ int main() {
       });
     };
 
-    for (int a = -11; a < 11; ++a)
-      for (int b = -11; b < 11; ++b) {
-        auto candidate_radius = half_to_one(generator) * 0.3;
-        point_3 candidate_center(a + 0.9 * zero_to_one(generator),
+    for (int a = -12; a < 12; ++a)
+      for (int b = -12; b < 12; ++b) {
+        auto candidate_radius = half_to_one(generator) * 0.333;
+        point_3 candidate_center(a + 0.999 * zero_to_one(generator),
                                  candidate_radius,
-                                 b + 0.9 * zero_to_one(generator));
+                                 b + 0.999 * zero_to_one(generator));
         if (orb_overlaps_existing(candidate_center, candidate_radius))
           continue;
 
@@ -93,8 +95,7 @@ int main() {
   }
 
   std::vector<color> imagebuffer;
-  render(formatter.image_width, formatter.image_height, main_camera, world,
-         imagebuffer);
+  render(image_width, image_height, main_camera, world, imagebuffer);
 
   formatter.print(imagebuffer);
 
