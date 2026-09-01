@@ -1,6 +1,7 @@
 #pragma once
 
 #include "color.h"
+#include "interval.h"
 #include "ray_3_intersection.h"
 
 class [[nodiscard]] material {
@@ -101,10 +102,8 @@ public:
         auto schlick_reflectance =
             r + (1 - r) * std::pow((1 - cos_theta_from_intersection_normal), 5);
 
-        thread_local std::mt19937 generator{std::random_device{}()};
-        thread_local std::uniform_real_distribution<double> distribution(0.0,
-                                                                         1.0);
-        bool schlick_reflection = schlick_reflectance > distribution(generator);
+        bool schlick_reflection =
+            schlick_reflectance > random_in_interval(zero_to_one);
 
         reflect_incoming_ray = total_internal_reflection || schlick_reflection;
       }

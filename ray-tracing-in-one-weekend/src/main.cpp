@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <numbers>
 
+#include "interval.h"
 #include "pixmap_formatter.h"
 #include "render.h"
 
@@ -22,10 +23,6 @@ int main() {
 
   std::vector<shape> world;
   {
-    std::mt19937 generator{std::random_device{}()};
-    std::uniform_real_distribution<double> zero_to_one(0.0, 1.0);
-    std::uniform_real_distribution<double> half_to_one(0.5, 1.0);
-
     const auto spawn_orb_lambertian = [&world](const point_3 &center,
                                                const color &albedo) -> void {
       auto material = std::make_shared<lambertian>(albedo);
@@ -73,18 +70,18 @@ int main() {
 
     for (int a = -12; a < 12; ++a)
       for (int b = -12; b < 12; ++b) {
-        auto candidate_radius = half_to_one(generator) * 0.333;
-        point_3 candidate_center(a + 0.999 * zero_to_one(generator),
+        auto candidate_radius = random_in_interval(half_to_one) * 0.333;
+        point_3 candidate_center(a + 0.999 * random_in_interval(zero_to_one),
                                  candidate_radius,
-                                 b + 0.999 * zero_to_one(generator));
+                                 b + 0.999 * random_in_interval(zero_to_one));
         if (orb_overlaps_existing(candidate_center, candidate_radius))
           continue;
 
-        if (auto choice = zero_to_one(generator); choice < 0.618)
+        if (auto choice = random_in_interval(zero_to_one); choice < 0.618)
           spawn_orb_lambertian(candidate_center, random_base16_normal_color());
         else if (choice < 0.944)
           spawn_orb_metal(candidate_center, random_base16_bright_color(),
-                          zero_to_one(generator));
+                          random_in_interval(zero_to_one));
         else
           spawn_orb_dielectric(candidate_center, 2.417); // diamond
       }

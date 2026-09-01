@@ -51,7 +51,7 @@ inline color linear_to_gamma_color(const color &clr) noexcept {
 }
 
 inline void assert_color_channel([[maybe_unused]] double channel) noexcept {
-  assert(interval(0.0, 1.0).contains(channel));
+  assert(interval(zero_to_one).contains(channel));
 }
 
 inline void assert_color([[maybe_unused]] const color &clr) noexcept {

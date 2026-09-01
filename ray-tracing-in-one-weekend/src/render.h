@@ -5,6 +5,7 @@
 
 #include "camera.h"
 #include "color.h"
+#include "interval.h"
 #include "shape.h"
 
 // Given a trace ray, interpolate a gradient.
@@ -96,14 +97,8 @@ inline color super_sampled_pixel_color(unsigned image_width,
 
   vector_3 sample_color_sum;
   for (unsigned sample = 0; sample < samples_count; ++sample) {
-    double u_jittered, v_jittered;
-    {
-      thread_local std::mt19937 generator{std::random_device{}()};
-      thread_local std::uniform_real_distribution<double> distribution(0.0,
-                                                                       1.0);
-      u_jittered = column + distribution(generator) - 0.5,
-      v_jittered = row + distribution(generator) - 0.5;
-    }
+    auto u_jittered = column + random_in_interval(zero_to_one) - 0.5,
+         v_jittered = row + random_in_interval(zero_to_one) - 0.5;
 
     sample_color_sum += trace_color(image_width, image_height, main_camera,
                                     world, u_jittered, v_jittered);
@@ -180,5 +175,6 @@ inline void render(unsigned image_width, unsigned image_height,
       tile_renderers.emplace_back(process_tile_renderer);
   }
 
-  std::println(stderr, "\r\x1b[K{:.0f}% ({}/{} tiles)", 100.0, tile_total_count, tile_total_count);
+  std::println(stderr, "\r\x1b[K{:.0f}% ({}/{} tiles)", 100.0, tile_total_count,
+               tile_total_count);
 }

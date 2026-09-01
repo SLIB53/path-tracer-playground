@@ -3,7 +3,8 @@
 #include <array>
 #include <cassert>
 #include <cmath>
-#include <random>
+
+#include "interval.h"
 
 class vector_3;
 
@@ -77,12 +78,12 @@ public:
     return std::sqrt(length_squared());
   }
 
-  static vector_3 random(double min = 0.0, double max = 1.0) {
-    thread_local std::mt19937 generator{std::random_device{}()};
-    std::uniform_real_distribution<double> distribution(min, max);
+  static vector_3 random(double component_min, double component_max) {
+    const interval component_min_to_component_max(component_min, component_max);
 
-    return vector_3(distribution(generator), distribution(generator),
-                    distribution(generator));
+    return vector_3(random_in_interval(component_min_to_component_max),
+                    random_in_interval(component_min_to_component_max),
+                    random_in_interval(component_min_to_component_max));
   }
 
   static vector_3 random_on_unit_sphere() {
@@ -100,17 +101,15 @@ public:
   static vector_3 random_on_unit_hemisphere(const vector_3 &normal) {
     auto candidate = vector_3::random_on_unit_sphere();
 
-    return dot(candidate, normal) > 0.0 ? candidate : -candidate;
+    return dot(candidate, normal) >= 0.0 ? candidate : -candidate;
   }
 
   static vector_3 random_on_unit_disk() {
-    thread_local std::mt19937 generator{std::random_device{}()};
-    thread_local std::uniform_real_distribution<double> distribution(-1.0, 1.0);
-
     while (true)
       if (auto candidate =
-              vector_3(distribution(generator), distribution(generator), 0.0);
-          candidate.length_squared() < 1.0)
+              vector_3(random_in_interval(negative_one_to_one),
+                       random_in_interval(negative_one_to_one), 0.0);
+          candidate.length_squared() <= 1.0)
         return candidate;
   }
 };
