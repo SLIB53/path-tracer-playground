@@ -1,9 +1,8 @@
 #include <algorithm>
 #include <numbers>
 
-#include "interval.h"
 #include "pixmap_formatter.h"
-#include "render.h"
+#include "ray_tracer.h"
 
 int main() {
   constexpr unsigned image_width = 5120;
@@ -12,6 +11,12 @@ int main() {
   pixmap_formatter formatter;
   formatter.image_width = image_width;
   formatter.image_height = image_height;
+
+  ray_tracer engine;
+  engine.image_width = image_width;
+  engine.image_height = image_height;
+  engine.samples_per_pixel = 512;
+  engine.trace_depth_maximum = 64;
 
   camera main_camera;
   main_camera.up = vector_3(0.0, 1.0, 0.0);
@@ -36,11 +41,14 @@ int main() {
       world.push_back(sphere(center, std::fabs(center.y()), material));
     };
 
-    const auto spawn_orb_dielectric =
-        [&world](const point_3 &center, double refraction_index) -> void {
-      auto material_outer = std::make_shared<dielectric>(refraction_index),
+    const auto spawn_orb_hollow_diamond =
+        [&world](const point_3 &center) -> void {
+      constexpr auto refraction_index_diamond = 2.417;
+
+      auto material_outer =
+               std::make_shared<dielectric>(refraction_index_diamond),
            material_inner =
-               std::make_shared<dielectric>(1.0 / refraction_index);
+               std::make_shared<dielectric>(1.0 / refraction_index_diamond);
       world.push_back(sphere(center, std::fabs(center.y()), material_outer));
       world.push_back(
           sphere(center, 0.854 * std::fabs(center.y()), material_inner));
@@ -49,7 +57,7 @@ int main() {
     // spawn big orbs
 
     spawn_orb_lambertian(point_3(-4.0, 1.0, 0.0), base16_palette[15]);
-    spawn_orb_dielectric(point_3(4.0, 1.0, 0.0), 2.417); // diamond
+    spawn_orb_hollow_diamond(point_3(4.0, 1.0, 0.0));
     spawn_orb_metal(point_3(0.0, 1.0, 0.0), base16_palette[1], 0.0);
 
     // spawn small orbs
@@ -79,11 +87,11 @@ int main() {
 
         if (auto choice = random_in_interval(zero_to_one); choice < 0.618)
           spawn_orb_lambertian(candidate_center, random_base16_normal_color());
-        else if (choice < 0.944)
+        else if (choice < 0.854)
           spawn_orb_metal(candidate_center, random_base16_bright_color(),
                           random_in_interval(zero_to_one));
         else
-          spawn_orb_dielectric(candidate_center, 2.417); // diamond
+          spawn_orb_hollow_diamond(candidate_center);
       }
 
     // spawn ground
@@ -92,7 +100,7 @@ int main() {
   }
 
   std::vector<color> imagebuffer;
-  render(image_width, image_height, main_camera, world, imagebuffer);
+  engine.render(main_camera, world, imagebuffer);
 
   formatter.print(imagebuffer);
 
