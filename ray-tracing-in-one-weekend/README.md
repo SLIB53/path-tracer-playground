@@ -4,29 +4,26 @@
 
 This is my solution to [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html), the first book in the Ray Tracing in One Weekend book series!
 
-The result above was rendered at 5,120 by 2,880 pixels with 512 samples per pixel and up to 64 bounces per ray, which took ~5 hours on a MacBook Pro 16" (M1 Max). With the same configuration, it takes ~20 minutes to render at 1,280 by 720 pixels. The application is a single-threaded process, and maintains 100% CPU utilization while using ~1 MiB memory throughout rendering.
-
-Though I used C++23 and deviate significantly from the book, the solution maintains the same results, and is complete at ~800 source lines of code.
+Though I used C++23 and deviate significantly from the book, the solution produces the same quality results as the book's reference renders. After completing the implementation, I had some fun tweaking the final scene as well. The result above was rendered at 5,120 by 2,880 pixels with 512 samples per pixel and up to 64 bounces per ray.
 
 ## Implementation Differences
 
-- C++23
-  - Rendering uses C++ concepts to intersect with geometry.
-  - I use `std::print` and `std::format`, rather than `std::cout` with the stream insertion operator.
-- Ray generation logic is part of the `render` function and moved out of the `camera` class.
+- Renders with tile-based multi-threading.
 - Path tracing algorithm is iterative with O(1) memory complexity, rather than recursive with O(n) memory complexity where n is the number of bounces.
-- Preferred assertions to defensive programming (I did not implement clamp).
-- Preferred radians to degrees (I use `std::numbers::pi` to express radians).
+- C++23
+  - Tracing uses C++ concepts to intersect with geometry, preferring static dispatch instead of dynamic dispatch.
+- Ray generation logic is part of the `ray_tracer` class and moved out of the `camera` class.
+- Preferred assertions to defensive programming.
 
-And many more less significant differences...
+And many more...
 
 ## Build & Run
 
 **Requirements:**
 
+- clang
 - cmake
 - ninja
-- clang
 
 **Build Targets:**
 
