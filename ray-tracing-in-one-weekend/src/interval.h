@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <random>
 
 constexpr auto infinity = std::numeric_limits<double>::infinity();
 
@@ -20,3 +21,14 @@ public:
     return x > min && x < max;
   }
 };
+
+[[nodiscard]] inline double random_in_interval(const interval intrvl) {
+  thread_local std::mt19937 generator{std::random_device{}()};
+  std::uniform_real_distribution<double> distribution(intrvl.min, intrvl.max);
+
+  return distribution(generator);
+}
+
+constexpr interval negative_one_to_one(-1.0, 1.0);
+constexpr interval zero_to_one(0.0, 1.0);
+constexpr interval half_to_one(0.5, 1.0);
