@@ -1,6 +1,5 @@
 #pragma once
 
-#include "interval.h"
 #include "vector_3.h"
 
 using color = vector_3;

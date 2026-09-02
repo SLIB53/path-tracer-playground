@@ -1,7 +1,6 @@
 #pragma once
 
 #include "color.h"
-#include "interval.h"
 #include "ray_3_intersection.h"
 
 class [[nodiscard]] material {
@@ -108,15 +107,11 @@ public:
         reflect_incoming_ray = total_internal_reflection || schlick_reflection;
       }
 
-      vector_3 out_direction;
-      {
-        out_direction = reflect_incoming_ray
-                            ? reflect(incoming_ray_direction_normalized,
-                                      intersection.normal)
-                            : refract(incoming_ray_direction_normalized,
-                                      intersection.normal,
-                                      refraction_index_of_intersection);
-      }
+      vector_3 out_direction =
+          reflect_incoming_ray
+              ? reflect(incoming_ray_direction_normalized, intersection.normal)
+              : refract(incoming_ray_direction_normalized, intersection.normal,
+                        refraction_index_of_intersection);
 
       out_scattered_ray = ray_3(intersection.point, out_direction);
     }

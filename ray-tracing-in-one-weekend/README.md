@@ -64,21 +64,25 @@ from decimal import ROUND_HALF_UP, Decimal
 from itertools import islice
 
 
-def parse_hex_token(hex_token: str) -> list[str]:
-    return list(islice((c for c in hex_token if c.isalnum()), 6))
+def parse_hex(text: str) -> list[str]:
+    return list(islice((c for c in text if c.isalnum()), 6))
 
 
-def parsed_hex_token_to_color(hex_token_parsed: list[str]) -> str:
-    def decode(channel: list[str]) -> Decimal:
-        return (Decimal(int("".join(channel), 16)) / Decimal(255)).quantize(
-            Decimal("1e-8"), rounding=ROUND_HALF_UP
-        )
+def format_parsed_hex_to_color(hex_parsed: list[str]) -> str:
+    def decode_and_quantize_parsed_channel(channel_parsed: list[str]) -> Decimal:
+        return (
+            Decimal(int("".join(channel_parsed), 16)) / Decimal(255)
+        ).quantize(Decimal("1e-8"), rounding=ROUND_HALF_UP)
 
-    r_decoded = decode(hex_token_parsed[0:2])
-    g_decoded = decode(hex_token_parsed[2:4])
-    b_decoded = decode(hex_token_parsed[4:6])
+    r = decode_and_quantize_parsed_channel(hex_parsed[0:2])
+    g = decode_and_quantize_parsed_channel(hex_parsed[2:4])
+    b = decode_and_quantize_parsed_channel(hex_parsed[4:6])
 
-    return f"color({r_decoded:.8f}, {g_decoded:.8f}, {b_decoded:.8f})"
+    return f"color({r:.8f}, {g:.8f}, {b:.8f})"
+
+
+def format_parsed_hex(hex_parsed: list[str]) -> str:
+    return ''.join(hex_parsed).upper()
 
 
 def main():
@@ -102,11 +106,14 @@ def main():
     ]
 
     print("inline constexpr std::array<color, 16> base16_palette{")
-    for index, (parsed_hex_token, label) in enumerate(
-        (parse_hex_token(hex_token), label) for (hex_token, label) in palette
+    for index, (hex_parsed, label) in enumerate(
+        (parse_hex(hex_token), label) for (hex_token, label) in palette
     ):
+        color_formatted = format_parsed_hex_to_color(hex_parsed)
+        hex_formatted = format_parsed_hex(hex_parsed)
+
         print(
-            f"{'':4}{(parsed_hex_token_to_color(parsed_hex_token))}, // {index:>2} #{''.join(parsed_hex_token).upper()} {label}"
+            f"{'':4}{color_formatted}, // {index:>2} #{hex_formatted} {label}"
         )
     print("};")
 

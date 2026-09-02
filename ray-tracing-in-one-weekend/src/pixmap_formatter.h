@@ -14,8 +14,7 @@ public:
 
     for (std::size_t i = 0; i < imagebuffer.size(); ++i) {
       std::print(stderr, "\r\x1b[K{:.0f}% ({}/{} pixels)",
-                 double(i) / imagebuffer.size() * 100.0, i + 1,
-                 imagebuffer.size());
+                 double(i) / imagebuffer.size() * 100.0, i, imagebuffer.size());
 
       std::println("{}", format_pixel(imagebuffer[i]));
     }
@@ -33,12 +32,14 @@ private:
   }
 
   [[nodiscard]] std::string format_pixel(const color &pixel_color) const {
-    auto color_channel_to_level = [](double channel) noexcept -> int {
+    const auto color_channel_to_color_level =
+        [](double channel) noexcept -> int {
       return int((double(max_color_level) + 0.999) * channel);
     };
 
-    return std::format("{} {} {}", color_channel_to_level(pixel_color.r()),
-                       color_channel_to_level(pixel_color.g()),
-                       color_channel_to_level(pixel_color.b()));
+    return std::format("{} {} {}",
+                       color_channel_to_color_level(pixel_color.r()),
+                       color_channel_to_color_level(pixel_color.g()),
+                       color_channel_to_color_level(pixel_color.b()));
   }
 };
