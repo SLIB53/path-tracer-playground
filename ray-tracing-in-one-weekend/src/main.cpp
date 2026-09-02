@@ -57,8 +57,8 @@ int main() {
     // spawn big orbs
 
     spawn_orb_lambertian(point_3(-4.0, 1.0, 0.0), base16_palette[15]);
-    spawn_orb_hollow_diamond(point_3(4.0, 1.0, 0.0));
     spawn_orb_metal(point_3(0.0, 1.0, 0.0), base16_palette[1], 0.0);
+    spawn_orb_hollow_diamond(point_3(4.0, 1.0, 0.0));
 
     // spawn small orbs
 

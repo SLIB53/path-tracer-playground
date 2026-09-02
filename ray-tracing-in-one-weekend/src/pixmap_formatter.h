@@ -14,8 +14,9 @@ public:
 
     for (std::size_t i = 0; i < imagebuffer.size(); ++i) {
       std::print(stderr, "\r\x1b[K{:.0f}% ({}/{} pixels)",
-                 double(i + 1) / imagebuffer.size() * 100.0, i + 1,
+                 double(i) / imagebuffer.size() * 100.0, i + 1,
                  imagebuffer.size());
+
       std::println("{}", format_pixel(imagebuffer[i]));
     }
 
